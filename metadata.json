@@ -1,0 +1,8 @@
+{
+  "name": "Saheb World",
+  "description": "A spiritual application, Saheb World.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

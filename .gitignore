@@ -1,0 +1,8 @@
+node_modules
+dist
+.aistudio
+*.zip
+.DS_Store
+.env
+.env.local
+EOF

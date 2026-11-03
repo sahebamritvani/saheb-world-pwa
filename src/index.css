@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+/* Centralized CSS Variable Palette for Theme Management */
+:root {
+  --app-bg: #FDFBF7;
+  --app-text: #1F1F1F;
+  --card-bg: #FFFFFF;
+  --card-border: rgba(212, 175, 55, 0.2);
+  --primary-color: #E16A28;
+  --header-color: #8B0000;
+  --sub-text-color: #5D4037;
+  --reader-text: #2C1E11;
+}
+
+.theme-white {
+  --app-bg: #FDFBF7;
+  --app-text: #1F1F1F;
+  --card-bg: #FFFFFF;
+  --card-border: rgba(212, 175, 55, 0.2);
+  --primary-color: #E16A28;
+  --header-color: #8B0000;
+  --sub-text-color: #5D4037;
+  --reader-text: #1F1F1F;
+}
+
+.theme-pothi {
+  --app-bg: #F4ECD8;
+  --app-text: #2C1E11;
+  --card-bg: #FFFDF9;
+  --card-border: #D2B48C;
+  --primary-color: #8B0000;
+  --header-color: #8B0000;
+  --sub-text-color: #5D4037;
+  --reader-text: #2C1E11;
+}
+
+.theme-night {
+  --app-bg: #121212;
+  --app-text: #F5F5F5;
+  --card-bg: #1E1E1E;
+  --card-border: #333333;
+  --primary-color: #D4AF37;
+  --header-color: #FFFFFF;
+  --sub-text-color: #B3B3B3;
+  --reader-text: #E0E0E0;
+}
+
+/* High-Contrast OLED True Black Theme (Specifically for low-light night reading) */
+.theme-trueblack {
+  --app-bg: #000000;
+  --app-text: #F5E6BE;
+  --card-bg: #080808;
+  --card-border: #332211;
+  --primary-color: #F5C518;
+  --header-color: #FFD700;
+  --sub-text-color: #D4AF37;
+  --reader-text: #F5E6BE;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  transition: background-color 0.3s, color 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+.theme-trueblack .card {
+  background-color: #080808;
+  border: 1px solid #332211;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.98);
+  color: #F5E6BE !important;
+}
+
+.theme-trueblack .card h3,
+.theme-trueblack .card h4,
+.theme-trueblack .card h5,
+.theme-trueblack .card p,
+.theme-trueblack .card span,
+.theme-trueblack .card div {
+  color: #F5E6BE;
+}
+
+.theme-trueblack .card .text-gray-900,
+.theme-trueblack .card .text-gray-800,
+.theme-trueblack .card .text-gray-700,
+.theme-trueblack .card .text-amber-950,
+.theme-trueblack .card .text-amber-900 {
+  color: #FFD700 !important;
+}
+
+/* Granthalaya Vault Reader trueblack high-contrast override */
+.theme-trueblack .granth-reader-content p,
+.theme-trueblack .granth-reader-content div,
+.theme-trueblack .granth-reader-content span,
+.theme-trueblack .granth-reader-content h5 {
+  color: #F5E6BE !important;
+  font-weight: 700 !important;
+}
+
+.theme-trueblack .btn-primary { background-color: #F5C518; color: #000000; font-weight: bold; }
+.theme-trueblack .header-text { color: #FFD700; text-shadow: 0 0 12px rgba(255, 215, 0, 0.3); }
+.theme-trueblack .sub-text { color: #D4AF37; }
+.theme-trueblack input, .theme-trueblack textarea { background-color: #111111; color: #F5E6BE; border-color: #333333; }
+
+/* Granth Vault Card Spring-Based Hover Animation */
+.vault-card-hover {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+  will-change: transform, box-shadow;
+}
+.vault-card-hover:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 22px 45px -8px rgba(245, 197, 24, 0.5), 0 0 20px rgba(225, 106, 40, 0.35);
+  border-color: #F5C518;
+  animation: pulseCardHover 2.2s infinite ease-in-out;
+}
+@keyframes pulseCardHover {
+  0%, 100% { transform: translateY(-8px) scale(1.05); }
+  50% { transform: translateY(-10px) scale(1.07); }
+}
+.vault-card-hover:active {
+  transform: scale(0.97);
+}
+
+/* Rotating 108 Aura Mala Animation */
+@keyframes rotateMala {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.rotating-aura { animation: rotateMala 75s linear infinite; }
+.rotating-aura:active, .rotating-aura:hover { animation-play-state: paused; }
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spinSlow 35s linear infinite;
+}
+
+/* Persistent Layout Components */
+.footer-anchor { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; display: flex; justify-content: center; align-items: center; background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(5px); color: #D4AF37; font-weight: bold; letter-spacing: 1px; font-size: 1.1rem; border-top: 2px solid #D4AF37; z-index: 100; }
+.main-container { padding-bottom: 70px; min-height: 100vh; box-sizing: border-box; }
+.line-guide-active { background-color: rgba(241, 196, 15, 0.15) !important; border-left: 3px solid #E16A28; }
+
+/* Soundwave bars animation */
+@keyframes soundwave {
+  0%, 100% { height: 6px; }
+  50% { height: 26px; }
+}
+.wave-bar {
+  animation: soundwave 1.2s ease-in-out infinite;
+}
+
+/* Breathing animation for Step 10 */
+@keyframes breatheScale {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+.breathe-circle {
+  animation: breatheScale 8s ease-in-out infinite;
+}
+
+/* Certificate Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #blessing-certificate, #blessing-certificate * {
+    visibility: visible;
+  }
+  #blessing-certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-shadow: none;
+    border: 4px double #8B0000;
+  }
+}
