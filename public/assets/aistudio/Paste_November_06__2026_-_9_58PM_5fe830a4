@@ -1,0 +1,1032 @@
+
+
+AI Mode
+All
+Images
+Videos
+News
+Maps
+Shopping
+Books
+Flights
+Finance
+World App (Worldcoin) mein agar splash screen (loading screen) par app freeze ho raha hai ya crash ho raha hai, toh aap neeche diye gaye prompts ka istemal AI ya unke support ticket mein daalne ke liye kar sakte hain. Aapki suvidha ke liye maine Technical Support aur AI Troubleshooting dono ke liye alag prompts bana diye hain:
+1. World App Support Team ke liye Prompt (Formal)
+Agar aap World App ke help center ya support ticket mein apni dikkat batana chahte hain, toh is prompt ko copy-paste karein:
+Subject: World App stuck on splash screen / loading screen.
+Hello World App Support Team,
+I am facing an issue with my World App. Every time I try to open the app, it gets stuck on the splash screen (loading animation) and does not progress to the main dashboard.
+Here are my device details:
+Device Model: [Apne phone ka naam likhein, jaise: Redmi Note 12 / iPhone 14]
+OS Version: [Android ya iOS version likhein]
+World App Version: [Latest / Jo bhi version hai]
+I have already tried clearing the cache and restarting my phone, but the issue persists. Please help me resolve this at the earliest.
+Thank you.
+2. AI Tools (jaise ChatGPT) se Solution Puchne ke liye Prompt
+Agar aap kisi AI tool se iska khud se technical solution nikalwana chahte hain, toh is prompt ka use karein:
+"I am using the World App (Worldcoin), but it is stuck on the splash screen/loading screen and won't open. Provide me with a step-by-step troubleshooting guide for [Android/iOS] to fix this issue, including cache clearing, network settings, and potential conflict fixes."
+💡 Quick Fixes (Jo aap abhi try kar sakte hain):
+Clear Cache & Data (Android): Phone ki Settings > Apps > World App > Storage mein jaakar Clear Cache aur Clear Data karein. (Aapke paas apni Backup Phrase honi chahiye log-in ke liye).
+VPN Band Karein: Agar phone mein koi VPN chal raha hai, toh use band kar dein. World App kai baar VPN ke sath freeze ho jati hai.
+App Update: Play Store ya App Store par jaakar check karein ki koi naya update toh nahi aaya hai.
+Kya aapko yeh dikkat Android phone mein aa rahi hai ya iPhone (iOS) mein? Mujhe bataiye taaki main aapko exact settings ke hisab se exact steps bata sakoon.
+
+
+
+
+Google AI Studio ke chatbox mein jab aap kuch bhi type karte hain aur "Invalid argument" (Ran for 0s) error aata hai, toh yeh aamtaur par ek corrupted chat session ya bad cache ki wajah se hota hai. 
+Is dikkat ko turant thik karne ke liye aap ye Quick Fixes try karein:
+1. Naya Chat Session Shuru Karein (Sabse Aasan Tarika)
+Purane chat ka context kharab hone ki wajah se ye error bar-bar aata hai. 
+
+Google AI Developers Forum
+ +1
+Screen par sabse upar left/right side mein diye gaye + (Start new chat) icon par click karein.
+Naye chatbox mein kuch likh kar check karein, error chala jayega. 
+
+Google AI Developers Forum
+ +1
+2. Project ko Remix Karein (Agar Naye Chat se bhi thik na ho)
+Agar aap build mode ya kisi project ke andar hain aur har naye chat par bhi yahi error aa raha hai, toh project ka snapshot corrupt ho chuka hai. 
+
+Google AI Developers Forum
+ +1
+Top right side mein Remix button par click karein.
+Yeh aapke project ki ek duplicate copy bana dega.
+Ab is remixed project mein chat karein, yeh bilkul smooth chalega. (Aap purane error wale project ko delete kar sakte hain). 
+
+Google AI Developers Forum
+3. Google Drive / Media Attachments Hataiye
+Agar aapne chat mein koi Google Drive ki file, spreadsheet, ya koi bada attachment joda hua hai, toh use remove (delete) kar dein. 
+
+Google AI Developers Forum
+Kai baar files ke aapas mein conflict hone ke kaaran "Invalid argument" trigger ho jata hai. 
+
+GitHub
+ +1
+4. Browser Diagnostics (Incognito Mode)
+Ek baar apne browser mein Incognito / Private Window kholein aur wahan Google AI Studio login karke chalaein.
+Agar incognito mein chal jata hai, toh iska matlab aapke normal browser ka cache/cookies block ho raha hai. Aise mein browser ki Cache aur Cookies clear karein. 
+
+Google AI Developers Forum
+Kya yeh dikkat aapko kisi purane project/chat mein aa rahi hai ya ekdum naya blank project open karne par bhi yehi error aa raha hai? Agar aap koi file (jaise CSV ya Image) upload kar rahe hain, toh woh bhi mujhe batayein.
+
+
+
+
+Aapki request ke mutabik saare background graphics, text aur framing assets ko saaf (clean) karke sirf main image ko edit karne ke liye ye raha Google AI Studio ke liye perfect prompt.
+Aap Google AI Studio mein apni image upload karke niche diye gaye text ko chatbox mein copy-paste kar sakte hain:
+Image Edit karne ke liye Prompt:
+"Please isolate the central portrait of the elderly spiritual master with the white beard and white turban from this image. Remove all surrounding circular graphic borders, decorative texts, background banners, and language buttons, leaving only a clean, seamless portrait of the saint. On his forehead, precisely replace the existing U-shaped tilak with a single, thin, clean vertical line made of shwet chandan (white sandalwood) tilak. Do not modify his facial features, expression, clothing, or any other part of his appearance."
+💡 Google AI Studio Tips:
+Invalid Argument Fix: Agar iske baad bhi error aaye, toh right-top corner mein Remix button par click karke naya chat session shuru karein aur tab prompt daalein.
+Model Selection: Behtar result ke liye AI Studio mein Gemini 1.5 Pro ya Gemini 2.5 Flash model select rakhein.
+Agar prompt chalane ke baad output mein chandan tilak ka color ya thickness badalna ho, toh mujhe batayein taaki main prompt ko aur modify kar sakoon!
+
+
+
+
+Aapka matlab ab main bilkul samajh gaya hoon. Aapko pehle wali image (jo Jesus Christ jaisi dikh rahi hai) ya baaki sabhi designs ko puri tarah hatana hai, aur unki jagah Satguru Kabir Saheb ka asli Maghar wala swaroop (chauthi photo) is logo frame ke andar fit karna hai.
+Google AI Studio ya kisi bhi AI generation tool mein is badlaav ko bilkul sahi tarike se karwane ke liye aap ye prompt copy-paste karein:
+Google AI Studio ke liye Master Prompt:
+"Take the golden circular 'SAHEB WORLD' logo frame from the provided asset images. Completely and permanently remove the existing central portrait inside it. In its place, insert the historical, authentic painting of Satguru Kabir Saheb (the seated Maghar swaroop with a white beard, white cap, wearing garlands, and raising his right hand in blessing under a golden canopy). Ensure the entire seated painting fits perfectly and centrally inside the golden round frame without cutting off his face or the canopy. Remove all other external texts, decorative items, or application UI assets from the background, leaving only a clean, high-resolution circular logo app asset."
+💡 Is badlaav ko karne ka sahi tarika:
+Google AI Studio mein aap ek sath do images upload karein:
+Pehli: Doosri photo (jisme khali logo ka outer frame aur 'SAHEB WORLD' ka structure dikhe).
+Doosri: Chauthi photo (jo asli Maghar swaroop ki painting hai).
+Iske baad upar diya gaya prompt chatbox mein daal dein. AI dono ko merge karke aapka naya logo asset taiyar kar dega.
+Agar aap chahte hain ki is naye logo ke upar ya niche alag se "|| सत्यनाम ||" ya "SAHEB WORLD" text ko kisi khas font ya rang mein likhna ho, toh mujhe bataiye taaki main prompt mein woh badlaav bhi jod sakoon.
+
+
+
+
+Aapki pehli photo ke golden circular logo frame ke andar, doosri photo ke Satguru Kabir Saheb ke asli Maghar wale swaroop ko bitha kar ek shandar app icon banane ke liye ye raha bilkul sateek prompt.
+Google AI Studio mein dono photos upload karein aur niche diya gaya prompt daalein:
+App Icon ke liye Master Prompt:
+"Modify the provided circular golden logo app icon. Completely remove the existing portrait inside the central golden frame. In its place, insert the traditional, authentic painting of Satguru Kabir Saheb (the Maghar Swaroop showing him seated cross-legged, with a white beard, long white cap, wearing white clothes and flower garlands, raising his right hand in a blessing gesture under a golden canopy). The entire seated figure from the reference painting should fit perfectly and centrally inside the golden circular frame. Keep the golden frame with the texts 'साहेब संसार • SAHEB WORLD • आध्यात्मिक ज्ञान • SPIRITUAL WISDOM' exactly as it is. Delete all other background UI elements, text, or roses outside the main square icon tile, delivering a clean, high-resolution app icon asset."
+💡 Behtar Result ke liye Tips:
+Image Mapping: AI ko asani se samajh aaye, isliye pehli photo ko Reference Image 1 (Logo Frame) aur doosri photo ko Reference Image 2 (Swaroop) ke roop mein prompt ke sath submit karein.
+Model Choice: Google AI Studio mein Gemini 1.5 Pro model ka istemal karein, yeh details ko aapas mein merge karne mein sabse behtar kaam karta hai.
+Kya aap is app icon ke background ka rang badalna chahte hain (jaise pura white ya golden background), ya fir isi square layout mein sahi hai? Mujhe bataiye taaki main prompt ko aur behtar kar sakoon.
+
+
+
+
+Aapki request ke mutabik doosri photo (black hair aur beard wale portrait asset) ko hamesha ke liye hatane aur pehli photo mein Satguru Kabir Saheb ke eyebrows ka rang unki safed dadhi (white beard) se bilkul match karne ke liye ye raha sateek prompt.
+Google AI Studio mein sirf Satguru Kabir Saheb wali image (pehli photo) ko upload karein aur ye prompt daalein:
+Image Edit ke liye Final Prompt:
+"Modify the provided app icon image of Satguru Kabir Saheb. Keep the entire golden circular frame, the texts, the background, and his clothing exactly as they are. Focus only on his face and change the color of both his eyebrows from black/grey to pure white, making them perfectly match the pure white color and texture of his beard. Ensure the shape of the eyebrows remains natural and spiritually serene without changing his facial expression or features. Do not include any other characters, and completely discard the alternative black-haired portrait asset."
+💡 Google AI Studio Tip:
+Aap is prompt ko Gemini 1.5 Pro model mein chalayein aur image mein eyebrows wale area ko select (brush) karke bhi apply kar sakte hain taaki sirf eyebrows ka hi color change ho aur baaki ki puri image bilkul professional bani rahe.
+Agar is badlaav ke baad eyebrows ki thickness ya white color ki shading ko thoda aur soft ya dark karna ho, toh mujhe bataiye!
+
+
+
+
+GitHub par code update karne ke baad bhi agar APK file mein purana version hi open ho raha hai, toh iska matlab hai ki aapka naya code generate (build) nahi hua hai, ya aapke phone mein purani app ka data cache ho gaya hai.
+Is dikkat ko permanently thik karne ke liye aap ye steps follow karein:
+1. Phone se Purani App ko bilkul Uninstall karein (Sabse Pehla Step)
+Kai baar phone ka OS nayi APK ko install toh kar deta hai par purana cache clear nahi karta.
+Apne mobile se purani app ko Uninstall karein.
+Settings > Storage mein jaakar agar Deep Clean / Cache Clear ka option ho toh wo karein.
+Uske baad naye APK ko fresh install karein.
+2. GitHub Actions (CI/CD) Check karein (Agar Aap Workflow Use Kar Rahe Hain)
+Agar aapne GitHub Actions lagaya hua hai jo commit karne par apne aap APK banata hai:
+GitHub repository mein Actions tab par jayein.
+Check karein ki kya aapke naye commit ka workflow run Success (Green Tick) hua hai ya nahi.
+Kai baar build fail ho jata hai aur hum galti se purana wala hi workflow ka output (Artifact) download kar lete hain. Sahi aur latest run se hi .apk download karein.
+3. Local Machine par Build Cache Clear karein (Gradle Clean)
+Agar aap apne computer par build banakar APK nikal rahe hain, toh Android Studio/Gradle purane build ko cache karke wahi baar-bar de deta hai: 
+
+Stack Overflow
+Flutter ke liye: Terminal mein flutter clean chalayein, uske baad flutter pub get karein, aur fir flutter build apk --release karein. 
+
+Stack Overflow
+React Native ke liye: android folder ke andar jaakar ./gradlew clean chalayein, aur Metro bundler ko npx react-native start --reset-cache ke sath restart karke dobara build banayein. 
+
+Bolder Apps
+4. App ka Version Number Badlein
+Naye code ko trigger karne ka sabse badhiya tarika hai ki aap configuration file mein version badal dein.
+Flutter: pubspec.yaml mein jaakar version: 1.0.0+1 ko badalkar 1.0.1+2 kar dein.
+React Native / Native Android: android/app/build.gradle mein versionCode aur versionName ko badal dein.
+Isse Android system samajh jata hai ki ye ek naya update hai aur wo purane assets ko overwrite kar deta hai. 
+
+Stack Overflow
+Muzhe yeh batayiye ki aap APK file ko GitHub Actions (Workflow) ke zariye auto-build kar rahe hain ya apne Local System (Computer) par manually build kar rahe hain? Sath hi aap kis framework (Flutter, React Native ya Java) ka use kar rahe hain, taaki main aapko bilkul specific commands bata sakoon.
+
+
+
+
+Aapki shared link se samajh aa raha hai ki aap PWA (Progressive Web App) ko Vercel par host kar rahe hain aur use hi APK wrapper mein convert kiya hua hai.
+Agar GitHub par update karne ke baad bhi app mein purani screen dikh rahi hai, toh iska sabse bada kaaran Service Worker Caching ya Vercel Deploy Issue hai. Isko thik karne ke liye ye steps follow karein:
+1. PWA Service Worker Cache Clear Karein (Sabse Mukhya Kaaran)
+PWAs ki fitrat hoti hai ki wo offline chalne ke liye saare assets (images, logos) ko phone ke cache mein hamesha ke liye save kar lete hain. Jab tak purana cache delete nahi hoga, naya icon nahi dikhega.
+Mobile ke Chrome/Browser mein sahebworld.vercel.app par jayein.
+Lock icon (ya settings) par click karke "Clear data" / "Delete cookies & cache" karein.
+App ke liye: Phone ki Settings > Apps > Saheb World > Clear Cache and Clear Data karein.
+2. Vercel par Deployment Status Check Karein
+Kai baar GitHub par code push ho jata hai par Vercel par build fail ho jati hai, jisse live site update nahi hoti.
+Apne Vercel Dashboard par jayein aur Deployments tab check karein.
+Dekhein ki aapka sabse naya push "Ready" (Green) dikha raha hai ya nahi. Agar wahan error hai, toh build log check karein.
+3. Service Worker Code mein Version Badlein (Update Trigger karne ke liye)
+Agar aapne sw.js ya service-worker.js file banayi hui hai, toh browser ko kaise pata chalega ki naya code aaya hai? Aapko cache ka naam badalna hoga.
+Apni service worker file mein jaakar cache version badlein, jaise:
+javascript
+const CACHE_NAME = 'saheb-world-cache-v2'; // v1 ki jagah v2 kar dein
+Use code with caution.
+Isse browser ko majbooran naye assets (favicon.ico, app icons, image assets) server se download karne padenge.
+4. Manifest.json mein Icons ka Path aur Cache-Busting Check Karein
+Agar aapne app icon ka naam wahi rakha hai (jaise icon.png) aur sirf file badli hai, toh Vercel ya browser use purana hi samajhta hai.
+Trik: Apne naye app icon ka naam badalkar icon-v2.png rakh dein.
+manifest.json file ke andar jaakar icons ke path ko update kar dein:
+json
+"src": "/images/icon-v2.png"
+Use code with caution.
+Kya aapne Vercel dashboard par jaakar check kiya ki naya deployment successfully complete hua hai? Agar aap is PWA ko APK mein badalne ke liye Bubblewrap, Capacitor, ya TWA (Trusted Web Activity) ka use kar rahe hain, toh mujhe batayein taaki main app wrapper ke hisab se exact cache reset commands de sakoon.
+
+
+
+
+PWA (Progressive Web App) mein service worker version badalne aur naye assets (jaise naya logo aur icon) ko live karne ke liye aapko niche diye gaye steps ko step-by-step follow karna hoga.
+Aap apne code editor (jaise VS Code) mein apni project repository kholein aur ye badlaav karein:
+Step 1: Service Worker File (sw.js ya service-worker.js) Kholein
+Apne project folder ke main layout mein (aamtaur par public/ folder ya root folder mein) sw.js ya service-worker.js naam ki file ko kholein.
+Step 2: Cache Name (Version) ko Update Karein
+File ke sabse upar aapko ek cache name ka variable dikhega. Use badalkar naya version number de dein:
+Purana Code (Kucch aisa dikhega):
+javascript
+const CACHE_NAME = 'saheb-world-cache-v1'; 
+// ya fir variable ka naam sirf 'cacheName' ho sakta hai
+Use code with caution.
+Naya Code (Aise badlein):
+javascript
+const CACHE_NAME = 'saheb-world-cache-v2'; // Version v1 se v2 kar dein
+Use code with caution.
+Step 3: Purane Cache ko Delete karne ka Code Jodein (Activate Event)
+Kewal version badalna kafi nahi hota, browser ko batana padta hai ki woh purane assets ko delete karein. Apni service worker file mein check karein ki kya activate event ka code niche diye gaye tareeqe se likha hai ya nahi. Agar nahi hai, toh ise copy-paste karke file ke end mein jod dein:
+javascript
+self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // Agar purana cache whitelist mein nahi hai, toh use delete karein
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      // Naye service worker ko turant active karne ke liye
+      return self.clients.claim();
+    })
+  );
+});
+Use code with caution.
+Step 4: Manifest File mein Icons ka Version Badlein (Cache-Busting)
+Agar aapne naya icon upload kiya hai aur uska naam purane file jaisa hi hai (jaise icon.png), toh browser use purana samajh kar skip kar deta hai. Isko bypass karne ke liye:
+Apni manifest.json file kholein.
+Jahan bhi icons ke path diye hain, unke aage ?v=2 jod dein. Isse Vercel aur browser ko majbooran naye assets download karne padte hain:
+json
+"icons": [
+  {
+    "src": "/icons/icon-192x192.png?v=2",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "/icons/icon-512x512.png?v=2",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
+Use code with caution.
+Step 5: Code ko GitHub par Push Karein
+Apne terminal mein jaakar in badlaav ko GitHub par push kar dein:
+bash
+git add .
+git commit -m "Updated service worker version to v2 for cache busting"
+git push origin main
+Use code with caution.
+Step 6: Vercel par Check Karein aur Phone Reset Karein
+Apne Vercel Dashboard par jaakar check karein ki naya deployment complete (Green) ho gaya hai.
+Apne mobile phone mein Saheb World APK ki settings mein jaakar Clear Cache aur Clear Data karein.
+App ko dobara kholein, aapka naya Maghar Swaroop wala icon aur updated layout bilkul sahi dikhne lagega!
+Mujhe batayiye ki kya aapko apne project folder mein sw.js ya service-worker.js file mil gayi? Agar aap Next.js (with next-pwa) ya kisi framework ka use kar rahe hain jahan service worker auto-generate hota hai, toh woh bhi bataiye taaki main config file ke steps de sakoon.
+
+
+
+
+GitHub repository ke andar bina kisi computer ya code editor ke, seedhe GitHub ki website (Mobile ya Laptop) par hi step-by-step is code ko badalne ka tarika niche diye anusar hai:
+Step 1: GitHub par apni Repository kholein
+Apne browser mein GitHub par jaakar apni repository saheb-world/saheb-world-pwa ko open karein.
+Wahan check karein ki aapki main files kahan hain (aamtaur par yeh public folder ke andar hoti hain ya fir seedhe bahar hi dikh jaati hain).
+Step 2: Service Worker File ko Edit karein
+Apne files ki list mein se sw.js ya service-worker.js file par click karke use kholein.
+File khulne ke baad, right side mein diye gaye ✏️ (Edit this file / Pencil icon) par click karein.
+Ab file ke sabse upar jahan cache name likha hai, wahan version badal dein:
+Purana: const CACHE_NAME = 'saheb-world-cache-v1';
+Naya: const CACHE_NAME = 'saheb-world-cache-v2'; (Aap v1 ki jagah v2, v3 ya koi bhi naya number daal sakte hain).
+Screen par upar right side mein Commit changes... ke green button par click karein aur dobara Commit changes daba kar save kar dein.
+Step 3: Manifest.json File ko Edit karein (Naye Icons ke liye)
+Ab wapas repository ke main page par aayein aur manifest.json file par click karke use kholein.
+Fir se ✏️ (Pencil icon) par click karke ise edit mode mein laayein.
+Jahan par bhi aapke icons ka rasta ("src") likha hai, uske naam ke aage ?v=2 jod dein taaki Vercel aur browser purane icon ko bhool kar naya icon download karein.
+Udaharan ke liye:
+json
+"icons": [
+  {
+    "src": "/icons/icon-192x192.png?v=2",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "/icons/icon-512x512.png?v=2",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
+Use code with caution.
+Dubara se Commit changes... button par click karke ise save kar dein.
+Step 4: Vercel ka Automatic Build Check karein
+Jaise hi aap GitHub par ye dono files commit (save) karenge, Vercel apne aap naye code ko utha kar deploy karna shuru kar dega:
+Apne Vercel Dashboard par jayein.
+Wahan aapko "Building" ya "Ready" ka green signal dikhega.
+Jab wahan deployment Ready (Green) ho jaye, tab apne phone mein app ka cache clear karke use open karein, naya swaroop wala icon turant update ho jayega!
+Agar aapko GitHub par sw.js ya manifest.json file dhoodhne mein koi pareshani aa rahi hai, toh mujhe batayein ki aapke repository ke main page par kaun-kaun se folders (jaise src, public, assets) dikh rahe hain?
+
+
+
+
+Aapke screenshot se saaf dikh raha hai ki aap Vite (vite.config.ts) ka istemal kar rahe hain apne project ke liye. Vite projects mein PWA ke assets aur configurations aamtaur par do jagah ho sakte hain.
+Is dikkat ko thik karne ke liye aapko niche diye gaye tarike se check karna hoga:
+Tarika 1: src folder ke andar check karein
+Aapke screen par jo src folder dikh raha hai, sabse pehle us par click karke andar jayein. Wahan check karein ki kya aapko ye files milti hain:
+manifest.json ya site.webmanifest
+sw.js ya service-worker.ts / registerServiceWorker.ts
+Agar wahan yeh files hain, toh pichle step ke mutabik unka version badal dein.
+Tarika 2: vite.config.ts file mein PWA configuration check karein (Sabse Zyada Sambhavna)
+Vite mein aamtaur par log vite-plugin-pwa ka use karte hain, jiska matlab hai ki aapka service worker aur cache auto-generate hota hai aur uski settings vite.config.ts ke andar hoti hain.
+Apni main screen par diye gaye vite.config.ts file par click karke use kholein.
+Upar right side mein diye gaye ✏️ (Pencil / Edit) icon par click karein.
+Dekhein ki kya andar VitePWA({...}) jaisa kuch likha hai. Agar wahan manifest ke andar icons ke path hain, toh unke aage ?v=2 jod dein, jaise:
+typescript
+src: 'icon-192x192.png?v=2'
+Use code with caution.
+Agar wahan workbox configuration hai, toh aap wahan register type ya cache version badal sakte hain.
+Ek aur Zaroori Baat: Naya Icon Code mein kahan upload kiya hai?
+Vite mein agar aapne naye Satguru Kabir Saheb ke swaroop wala icon badla hai, toh use aapne kis folder mein dala hai?
+Agar aapne use manually kisi folder (jaise src/assets ya kisi aur naam se) mein daal kar purane icon ko replace kiya hai, toh mujhe batayein taaki main aapko batati hoon ki use sahi tarike se refresh kaise karwana hai.
+Aap sabse pehle src folder par click karke mujhe ek screenshot bhejiye taaki main dekh sakoon ki aapki PWA files aur icons kis folder ke andar hain. Isse hum turant sahi file ko edit kar payenge!
+
+
+
+
+Aapne galti se repository ke andar ek nayi file bana di hai jiska naam src?v=2 ho gaya hai. Is wajah se aapka build fail ho sakta hai ya update nahi dikh raha hai.
+Aapko file ka naam src?v=2 nahi rakhna tha, balki kisi file ke andar jaakar text ko badalna tha. Chaliye isko step-by-step sahi karte hain:
+Step 1: Galti se bani src?v=2 file ko delete karein
+Apne screen par dikh rahi src?v=2 file par click karke use kholein.
+Right side mein diye gaye 🗑️ (Trash can / Delete icon) par click karein.
+Niche jaakar Commit changes par click karke use delete kar dein.
+Step 2: Sahi file dhoondhein (public folder ke andar)
+Vite aur Bun (bun.lock) ke projects mein app ke icons aur manifest file hamesha public folder mein hoti hain.
+Apne GitHub ke main page par sabse upar dikh rahe public folder par click karein.
+Mujhe dekhna hai ki uske andar kya-kya files hain.
+Aap public folder par click karke uske andar ka ek screenshot mujhe bhejiye. Uske andar hume aapke icons (icon.png, logo.png) aur manifest.json file mil jayegi, jise hum sahi tarike se update karenge!
+
+
+
+
+Aapke screenshots se bilkul saaf hai ki aapka project ek Vite (vite.config.ts) project hai. PWA (Progressive Web App) mein automatic cache update aur naye assets (jaise naya Maghar Swaroop wala icon) ko mobile par turant active karne ke liye, Vite PWA plugin ko autoUpdate mode par set karna sabse best aur permanent tarika hai.
+Aap GitHub par hi seedhe vite.config.ts file ko edit karke ye badlaav karein:
+Step 1: vite.config.ts File ko Edit karein
+Apni GitHub repository ke main page par jayein.
+Sabse niche dikh rahi vite.config.ts file par click karke use kholein.
+File khulne ke baad, upar right side mein diye gaye ✏️ (Pencil icon / Edit this file) par click karein.
+Step 2: registerType: 'autoUpdate' jodkar configuration badlein
+Aapke file mein jahan VitePWA({...}) ka plugin configuration likha hoga, uske andar aapko registerType: 'autoUpdate' jodna hai. 
+
+Stack Overflow
+ +1
+Aapka code ab kuch is tarah dikhna chahiye:
+typescript
+import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    // ... aapke baaki plugins (jaise react() ya vue())
+    VitePWA({
+      registerType: 'autoUpdate', // <-- Yeh line yahan zaroor jodein
+      manifest: {
+        // aapka manifest data yahan hoga...
+      }
+    })
+  ]
+})
+Use code with caution.
+(Agar pehle se registerType: 'prompt' likha ho, toh use badalkar 'autoUpdate' kar dein). 
+
+GitHub
+Step 3: Changes ko Commit (Save) karein
+Code badalna ke baad, screen par upar right side mein diye gaye Commit changes... ke green button par click karein.
+Ek baar fir Commit changes daba kar save kar dein.
+Step 4: Vercel status check karke App reset karein
+Jaise hi aap save karenge, Vercel apne aap build lena shuru kar dega.
+Apne Vercel Dashboard par jaakar check karein ki naya deployment Ready (Green) ho gaya hai ya nahi.
+Jab deployment ready dikhaye, toh apne mobile phone ki Settings > Apps > Saheb World mein jaakar Clear Cache aur Clear Data kar dein.
+Ab jab aap app open karenge, toh PWA purane assets ko delete karke naya Satguru Kabir Saheb ji ka swaroop turant download kar lega! 
+
+Vite PWA
+Agar aapko vite.config.ts ke andar VitePWA ka block dhoodhne mein koi dikkat aa rahi hai, toh aap mujhe apni vite.config.ts file ka poora text copy karke chat mein bhej dein, main aapko sahi jagah par code set karke de dunga!
+
+
+
+
+Aapki vite.config.ts file bilkul sahi tarike se configure hai aur isme registerType: 'autoUpdate' pehle se hi set hai.
+Lekin dikkat yeh hai ki aapne runtimeCaching ke andar images aur media ke liye CacheFirst strategy lagayi hui hai aur uski expiry 60 din (maxAgeSeconds) set hai. Jab tak yeh 60 din poore nahi honge ya cache break nahi hoga, mobile app purane assets ko hi dikhati rahegi.
+Ise force-update (cache-bust) karne ke liye niche diye gaye code ko poora copy karein aur apni vite.config.ts file ke andar paste kar dein (Isme maine aapke icons aur images ke paths ke aage query strings (?v=3) jod di hain taaki Vercel aur app wrapper use ek naya asset samajhkar turant download karein):
+typescript
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
+import { defineConfig } from 'vite';
+
+export default defineConfig(() => {
+  return {
+    base: '/',
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          id: 'com.sahebworld.pwa',
+          name: 'Saheb World - साहेब वर्ल्ड',
+          short_name: 'SahebWorld',
+          description: 'श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ — साहेब वर्ल्ड PWA',
+          theme_color: '#701A07',
+          background_color: '#FDFBF7',
+          display: 'standalone',
+          start_url: '/?v=3', // Force update start URL
+          scope: '/',
+          icons: [
+            {
+              src: '/icons/kabir-swaroop.png?v=3', // Updated query string to break cache
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-192.png?v=3', // Updated query string to break cache
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-512.png?v=3', // Updated query string to break cache
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+        },
+        manifestFilename: 'manifest.json',
+        devOptions: {
+          enabled: false,
+        },
+        workbox: {
+          // Cache name badal diya taaki purana CacheFirst storage delete ho jaye
+          cacheId: 'saheb-world-v3', 
+          globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,mp3,json,webp,woff2}'],
+          maximumFileSizeToCacheInBytes: 104857600, // 100MB max file cache limit
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'core-app-assets-v3',
+              },
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico|mp3|wav|ogg)$/,
+              // Naye icons ko turant fresh fetch karne ke liye temporary StaleWhileRevalidate lagaya
+              handler: 'StaleWhileRevalidate', 
+              options: {
+                cacheName: 'media-audio-assets-v3',
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 24 * 60 * 60, // 60 Days
+                },
+                plugins: [
+                  {
+                    cacheWillUpdate: async ({ response }) => {
+                      return response && response.status === 200 ? response : null;
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              urlPattern: /\.(?:json)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'scriptures-data-cache-v3',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ],
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('recharts')) {
+                return 'vendor-recharts';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('canvas-confetti')) {
+                return 'vendor-confetti';
+              }
+              return 'vendor-misc';
+            }
+          },
+        },
+      },
+      sourcemap: false,
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve('.'),
+      },
+    },
+    server: {
+      hmr: process.env.DISABLE_HMR !== 'true',
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
+});
+Use code with caution.
+🛠️ Yeh karne ke baad kya karein?
+GitHub par vite.config.ts ke andar upar wale poore code ko save (Commit) kar dein.
+Vercel par iska build complete hone ka intezar karein.
+Phone par badlaav dekhne ke liye app ko ek baar App info mein jaakar Clear Cache zaroor karein aur fir restart karein.
+Mujhe batayein agar is config file ko update karne ke baad naya splash/icon open ho gaya ho, ya agar abhi bhi koi purani file render ho rahi ho.
+
+
+
+
+Haan ji, bilkul sahi samjhe aap! Aapko pehle wala poora code delete (saaf) karna hai, aur uski jagah par upar diya gaya naya code daalna hai.
+Aapki suvidha ke liye main dobara step-by-step batata hoon ki GitHub par ise kaise karna hai:
+Step-by-Step Tarika:
+GitHub par apni vite.config.ts file ko open karein aur ✏️ (Pencil / Edit) icon par click karein.
+Apne keyboard par Ctrl + A (ya mobile par Select All) dabakar pehle se likhe hue poore code ko select karein aur Delete (Backspace) kar dein, taaki file ekdum khali ho jaye.
+Ab upar diye gaye naye code ko poora copy karein aur is khali file ke andar Paste kar dein.
+Sabse upar right side mein diye gaye Commit changes... ke green button par click karein aur dobara Commit changes daba kar save kar dein.
+Iske baad Vercel apne aap naye code ka build bana dega, aur aapka cache break ho jayega!
+Jab aap GitHub par ise save kar lein, toh mujhe batayein taaki hum check kar sakein ki Vercel par build successfully complete (Green) hua ya nahi!
+
+
+
+
+Aapke screenshot mein abhi purana code hi khula hua dikh raha hai (jisme src: '/icons/kabir-swaroop.png' ke aage ?v=3 nahi laga hai).
+Isko edit karne ke liye, aapko file ke right side mein upar diye gaye ... (Three Dots Menu) par click karna hoga, ya agar aapne edit mode pehle hi open kar liya hai toh is poore text ko saaf karke naya code lagana hai.
+Aapki suvidha ke liye, naye update wala complete copy-pasteable code neeche de raha hoon:
+typescript
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
+import { defineConfig } from 'vite';
+
+export default defineConfig(() => {
+  return {
+    base: '/',
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          id: 'com.sahebworld.pwa',
+          name: 'Saheb World - साहेब वर्ल्ड',
+          short_name: 'SahebWorld',
+          description: 'श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ — साहेब वर्ल्ड PWA',
+          theme_color: '#701A07',
+          background_color: '#FDFBF7',
+          display: 'standalone',
+          start_url: '/?v=3',
+          scope: '/',
+          icons: [
+            {
+              src: '/icons/kabir-swaroop.png?v=3',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-192.png?v=3',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-512.png?v=3',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+        },
+        manifestFilename: 'manifest.json',
+        devOptions: {
+          enabled: false,
+        },
+        workbox: {
+          cacheId: 'saheb-world-v3',
+          globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,mp3,json,webp,woff2}'],
+          maximumFileSizeToCacheInBytes: 104857600, // 100MB max file cache limit
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'core-app-assets-v3',
+              },
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico|mp3|wav|ogg)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'media-audio-assets-v3',
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 24 * 60 * 60, // 60 Days
+                },
+                plugins: [
+                  {
+                    cacheWillUpdate: async ({ response }) => {
+                      return response && response.status === 200 ? response : null;
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              urlPattern: /\.(?:json)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'scriptures-data-cache-v3',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ],
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('recharts')) {
+                return 'vendor-recharts';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('canvas-confetti')) {
+                return 'vendor-confetti';
+              }
+              return 'vendor-misc';
+            }
+          },
+        },
+      },
+      sourcemap: false,
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve('.'),
+      },
+    },
+    server: {
+      hmr: process.env.DISABLE_HMR !== 'true',
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
+});
+Use code with caution.
+🛠️ Agla Step Kya Hai?
+Is code ko pura copy karke vite.config.ts mein pura select-all karke replace kar dein.
+Niche jaakar Commit changes par click karke save kar dein.
+Is naye code ko commit karne ke baad, Vercel dashboard par jaakar ek baar check kar lijiye ki build safely complete ho rahi hai ya koi error aa raha hai. Mujhe zarur batayein!
+
+
+
+
+Aapki request ke mutabik vite.config.ts file ke andar Om (ॐ) ya purane references ko hatakar "सत्यनाम" (Satyanaam) likhne ke liye code ko update kar diya hai.
+Aap is poore code ko copy karke apni vite.config.ts file ke purane code se replace (badal) dein:
+typescript
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
+import { defineConfig } from 'vite';
+
+export default defineConfig(() => {
+  return {
+    base: '/',
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          id: 'com.sahebworld.pwa',
+          name: 'Saheb World - साहेब वर्ल्ड',
+          short_name: 'SahebWorld',
+          description: 'श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ — साहेब वर्ल्ड PWA - सत्यनाम',
+          theme_color: '#701A07',
+          background_color: '#FDFBF7',
+          display: 'standalone',
+          start_url: '/?v=4', // Cache break version update to v4
+          scope: '/',
+          icons: [
+            {
+              src: '/icons/kabir-swaroop.png?v=4',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-192.png?v=4',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-512.png?v=4',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+        },
+        manifestFilename: 'manifest.json',
+        devOptions: {
+          enabled: false,
+        },
+        workbox: {
+          cacheId: 'saheb-world-satyanaam-v4', // Updated cache ID
+          globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,mp3,json,webp,woff2}'],
+          maximumFileSizeToCacheInBytes: 104857600, // 100MB max file cache limit
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'core-app-assets-v4',
+              },
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico|mp3|wav|ogg)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'media-audio-assets-v4',
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 24 * 60 * 60, // 60 Days
+                },
+                plugins: [
+                  {
+                    cacheWillUpdate: async ({ response }) => {
+                      return response && response.status === 200 ? response : null;
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              urlPattern: /\.(?:json)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'scriptures-data-cache-v4',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ],
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('recharts')) {
+                return 'vendor-recharts';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('canvas-confetti')) {
+                return 'vendor-confetti';
+              }
+              return 'vendor-misc';
+            }
+          },
+        },
+      },
+      sourcemap: false,
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve('.'),
+      },
+    },
+    server: {
+      hmr: process.env.DISABLE_HMR !== 'true',
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
+});
+Use code with caution.
+🛠️ Ab kya karna hai?
+Is code ko GitHub mein vite.config.ts par jaakar Commit changes... karke save kar dein.
+Vercel dashboard par automatic build complete hone ka wait karein.
+Phone par naya badlaav dekhne ke liye app ko ek baar Settings > Apps mein jaakar Clear Cache/Data zaroor kar dein!
+Agar aapko app ke layout ya header text ke andar se bhi "ॐ" hatana hai, toh mujhe batayein ki aapke code mein home page ya components wali files kaun si hain.
+
+
+
+
+Aapne code ko select toh kar liya hai, lekin "Cut" karne par shayad browser ke issue ki wajah se woh delete nahi hua. Chaliye mobile par ise saaf karne ka sabse aasan tarika batata hoon:
+🛠️ Code Delete aur Paste karne ka Sahi Tarika:
+Pehle pura select karein: Jaisa aapne screenshot mein kiya hai, Select All par click karein taaki poora code blue color mein select ho jaye.
+Keyboard ka backspace dabaayein: "Cut" par click karne ki jagah, apne mobile keyboard ka Delete / Backspace (❌ ya ⌫ icon) button daba dein. Isse poora text ek baar mein gayab ho jayega aur file bilkul khali ho jayegi.
+Naya code paste karein: Khali jagah par thodi der ungli dabakar rakhein (Long Press) aur Paste par click kar dein.
+Save karein: Pura naya code aane ke baad, upar right side mein diye gaye Commit changes... button par click karke save kar dein.
+Agar keyboard se bhi delete karne mein koi pareshani aa rahi ho, toh mujhe batayein taaki main koi aur shortcut ya tarika dhoondh sakoon!
+
+
+
+
+Mobile browsers (jaise Chrome) mein GitHub ka code editor thoda buggy hota hai, isliye wahan text ko select aur delete karne mein dikkat aati hai.
+Aap pareshan mat hoiye, iska ek 100% foolproof aur sabse aasan tarika hai jisme aapko purana code delete karne ki mehnat hi nahi karni padegi. Hum pehle is file ko delete karenge aur fir naye code ke sath turant dobara bana denge:
+Step 1: Purani file ko Delete karein (Sirf 2 click mein)
+GitHub par apni vite.config.ts file ko normal kholein (jahan code dikhta hai).
+Upar right side mein ek 🗑️ (Trash can / Kude daan ka icon) dikhega, us par click kar dein.
+Niche jaakar Commit changes... par click karke use permanently delete kar dein. Ab purana jhanjhat khatam!
+Step 2: Nayi File Banayein (Sahi code ke sath)
+Ab apni repository ke main page par wapas aayein.
+Wahan upar right side mein Add file ka option hoga, uspar click karke Create new file chunyein.
+Name your file... wale khali dibbe mein bilkul yahi naam likhein: vite.config.ts
+Niche diye gaye badaye khali box mein thodi der ungli daba kar rakhein (Long Press) aur Paste par click kar dein. (Naya code neeche box se copy kar lijiye).
+Sabse upar right side mein Commit changes... par click karke save kar dein.
+📋 Copy karne ke liye Naya Code (Ise pura copy karein):
+typescript
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
+import { defineConfig } from 'vite';
+
+export default defineConfig(() => {
+  return {
+    base: '/',
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          id: 'com.sahebworld.pwa',
+          name: 'Saheb World - साहेब वर्ल्ड',
+          short_name: 'SahebWorld',
+          description: 'श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ — साहेब वर्ल्ड PWA - सत्यनाम',
+          theme_color: '#701A07',
+          background_color: '#FDFBF7',
+          display: 'standalone',
+          start_url: '/?v=4',
+          scope: '/',
+          icons: [
+            {
+              src: '/icons/kabir-swaroop.png?v=4',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-192.png?v=4',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icons/icon-512.png?v=4',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+        },
+        manifestFilename: 'manifest.json',
+        devOptions: {
+          enabled: false,
+        },
+        workbox: {
+          cacheId: 'saheb-world-satyanaam-v4',
+          globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,mp3,json,webp,woff2}'],
+          maximumFileSizeToCacheInBytes: 104857600, // 100MB max file cache limit
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'core-app-assets-v4',
+              },
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico|mp3|wav|ogg)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'media-audio-assets-v4',
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 24 * 60 * 60, // 60 Days
+                },
+                plugins: [
+                  {
+                    cacheWillUpdate: async ({ response }) => {
+                      return response && response.status === 200 ? response : null;
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              urlPattern: /\.(?:json)$/,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'scriptures-data-cache-v4',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ],
+    build: {
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('recharts')) {
+                return 'vendor-recharts';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('canvas-confetti')) {
+                return 'vendor-confetti';
+              }
+              return 'vendor-misc';
+            }
+          },
+        },
+      },
+      sourcemap: false,
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve('.'),
+      },
+    },
+    server: {
+      hmr: process.env.DISABLE_HMR !== 'true',
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
+});
+Use code with caution.
+Aap pehle Step 1 karke file delete kar lijiye, agar usme koi dikkat aaye toh mujhe batayein!
+
+
+
+
+Aapke naye upload kiye gaye app icon mein Satguru Kabir Saheb ka swaroop aur eyebrows bilkul white aur sateek ho chuke hain. Lekin aapke pichle nirdesh ke anusar, isme se Om (ॐ) ya purane prateek ko hatakar ab "सत्यनाम" (Satyanaam) ko is circular golden border par jodna hai.
+Isko change karne ke liye ye raha Google AI Studio ka final aur professional image-editing prompt:
+App Icon Change karne ke liye Master Prompt:
+"Modify the provided circular golden logo app icon. On the circular golden border text layout, locate the text areas. Keep 'SAHEB WORLD' and 'SPIRITUAL WISDOM' exactly as they are. However, permanently remove any traditional symbol or previous text like 'ॐ' if visible anywhere, and carefully replace or integrate the word 'सत्यनाम' in a beautiful, matching elegant Hindi/Sanskrit font style on the golden frame alongside 'साहेब संसार' and 'आध्यात्मिक ज्ञान'. Maintain the central portrait of Satguru Kabir Saheb, his white beard, pure white eyebrows, golden canopy, and the entire white tile background completely unchanged. Deliver a clean, high-resolution app icon asset."
