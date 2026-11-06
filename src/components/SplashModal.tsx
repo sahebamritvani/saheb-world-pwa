@@ -198,9 +198,9 @@ export const SplashModal: React.FC<SplashModalProps> = ({ isOpen, onClose }) => 
             }}
           >
             <img 
-              src="/assets/images/kabir_saheb_maghar.jpg" 
+              src="/icons/kabir-swaroop.png" 
               alt="Satguru Kabir Saheb"
-              className="w-[105%] h-[105%] object-cover object-top"
+              className="w-[105%] h-[105%] object-cover object-center"
             />
           </div>
         </div>

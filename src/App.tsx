@@ -78,6 +78,7 @@ import { SpiritualAudioPlayer } from './components/SpiritualAudioPlayer';
 import { QuoteCardModal } from './components/QuoteCardModal';
 import { SplashModal } from './components/SplashModal';
 import { OfflineBanner } from './components/OfflineBanner';
+import { AdminPinModal } from './components/AdminPinModal';
 
 export default function App() {
   const { lang, setLang, t } = useLanguage();
@@ -92,6 +93,22 @@ export default function App() {
   const [vaults, setVaults] = useState<GranthVaultSlot[]>(() => getStoredVaults());
   const [swadhyayData, setSwadhyayData] = useState<SwadhyayStepSlot>(() => getStoredSwadhyay());
   const [showDataInjector, setShowDataInjector] = useState(false);
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pendingInjectorAction, setPendingInjectorAction] = useState<(() => void) | null>(null);
+
+  const handleOpenDataInjector = (onUnlockAction?: () => void) => {
+    if (isAdminUnlocked) {
+      if (onUnlockAction) onUnlockAction();
+      setShowDataInjector(true);
+    } else {
+      setPendingInjectorAction(() => () => {
+        if (onUnlockAction) onUnlockAction();
+        setShowDataInjector(true);
+      });
+      setShowPinModal(true);
+    }
+  };
   const [injectionJson, setInjectionJson] = useState('');
   const [injectionTarget, setInjectionTarget] = useState<'swadhyay' | 'vault'>('swadhyay');
   const [injectionVaultId, setInjectionVaultId] = useState<number>(1);
@@ -1164,7 +1181,7 @@ export default function App() {
 
                 {/* Data Injection Button */}
                 <button
-                  onClick={() => setShowDataInjector(!showDataInjector)}
+                  onClick={() => handleOpenDataInjector(() => setShowDataInjector(!showDataInjector))}
                   className="p-1 rounded-md border border-amber-400 bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold cursor-pointer"
                   title={t.dataInjectorTitle}
                 >
@@ -1302,474 +1319,6 @@ export default function App() {
                   />
                 </div>
               )}
-
-              {/* =====================================================================
-                  1. DAILY KABIR SAKHI SECTION (Inspirational Daily Scripture Quote)
-                 ===================================================================== */}
-              <div className="mb-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 via-[#FFFDF9] to-orange-50/60 border-2 border-amber-300 shadow-md space-y-3">
-                <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base sm:text-lg">🌹</span>
-                    <div>
-                      <h4 className="font-extrabold text-xs sm:text-sm text-[#8B0000] m-0">
-                        {lang === 'pa' ? 'ਅੱਜ ਦੀ ਪਾਵਨ ਕਬੀਰ ਸਾਖੀ' : lang === 'en' ? 'Daily Kabir Sakhi' : 'आज की पावन कबीर साखी'}
-                      </h4>
-                      <span className="text-[10px] text-amber-800 font-semibold">
-                        {lang === 'pa' ? dailySakhi.topicPa : lang === 'en' ? dailySakhi.topicEn : dailySakhi.topicHi}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => {
-                        const randomSakhi = DAILY_SAKHIS[Math.floor(Math.random() * DAILY_SAKHIS.length)];
-                        setDailySakhi(randomSakhi);
-                        playGentleBell(528);
-                      }}
-                      className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition cursor-pointer"
-                      title="अन्य साखी देखें (Next Sakhi)"
-                    >
-                      🔄 {lang === 'pa' ? 'ਹੋਰ ਸਾਖੀ' : lang === 'en' ? 'Another' : 'अन्य साखी'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sacred Couplet Display */}
-                <div className="p-3.5 bg-amber-100/30 rounded-xl border border-amber-200 text-center">
-                  <p className="text-sm sm:text-base font-black text-[#8B0000] italic leading-relaxed whitespace-pre-line m-0">
-                    "{lang === 'pa' ? dailySakhi.coupletPa : lang === 'en' ? dailySakhi.coupletEn : dailySakhi.coupletHi}"
-                  </p>
-                  <p className="text-xs text-amber-950 font-medium mt-2 pt-2 border-t border-amber-200/70 m-0">
-                    <strong>{lang === 'pa' ? 'ਭਾਵਾਰਥ: ' : lang === 'en' ? 'Spiritual Essence: ' : 'भावार्थ: '}</strong>
-                    {lang === 'pa' ? dailySakhi.bhavarthPa : lang === 'en' ? dailySakhi.bhavarthEn : dailySakhi.bhavarthHi}
-                  </p>
-                </div>
-
-                {/* Sakhi Action Bar */}
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <button
-                    onClick={() => {
-                      const textToCopy = `${dailySakhi.coupletHi}\n\nभावार्थ: ${dailySakhi.bhavarthHi}\n\n— साहेब वर्ल्ड (Saheb World PWA)`;
-                      navigator.clipboard.writeText(textToCopy);
-                      showToast(lang === 'pa' ? 'ਸਾਖੀ ਕਾਪੀ ਹੋਈ!' : lang === 'en' ? 'Sakhi copied!' : 'साखी क्लिपबोर्ड पर कॉपी हुई!');
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[11px] font-bold border border-amber-300 transition cursor-pointer"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>{lang === 'pa' ? 'ਕਾਪੀ ਕਰੋ' : lang === 'en' ? 'Copy' : 'प्रतिलिपि'}</span>
-                  </button>
-
-                  <button
-                    onClick={handleSocialShare}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-[11px] font-bold shadow-xs transition cursor-pointer"
-                  >
-                    <Share2 className="w-3.5 h-3.5" />
-                    <span>{lang === 'pa' ? 'ਸਾਂਝੀ ਕਰੋ' : lang === 'en' ? 'Share' : 'साझा करें'}</span>
-                  </button>
-
-                  <button
-                    onClick={() => playGentleBell(528)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100/80 hover:bg-amber-200 text-amber-900 text-[11px] font-bold border border-amber-300 transition cursor-pointer"
-                    title="चिंतन घंटी बजाएं (Reflection Bell)"
-                  >
-                    <span>🔔 {lang === 'pa' ? 'ਚਿੰਤਨ ਘੰਟੀ' : lang === 'en' ? 'Reflect Bell' : 'चिंतन घंटी'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* =====================================================================
-                  DAILY HUKAMNAMA SECTION (Sri Guru Granth Sahib Bani - Vault 6 Guidance)
-                 ===================================================================== */}
-              <div className="mb-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 via-[#FFFDF9] to-amber-100/70 border-2 border-amber-300 shadow-md space-y-3">
-                <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base sm:text-lg">📜</span>
-                    <div>
-                      <h4 className="font-extrabold text-xs sm:text-sm text-[#8B0000] m-0">
-                        {lang === 'pa' ? 'ਅਜੋਕਾ ਪਾਵਨ ਹੁਕਮਨਾਮਾ (Sri Guru Granth Sahib Bani)' : lang === 'en' ? 'Daily Hukamnama (Sri Guru Granth Sahib Bani)' : 'दैनिक पावन हुक्मनामा (श्री गुरु ग्रंथ साहेब बाणी)'}
-                      </h4>
-                      <span className="text-[10px] text-amber-800 font-semibold">
-                        {lang === 'pa' ? dailyHukamnama.raagPa : lang === 'en' ? dailyHukamnama.raagEn : dailyHukamnama.raagHi}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => {
-                        const randomHukam = DAILY_HUKAMNAMAS[Math.floor(Math.random() * DAILY_HUKAMNAMAS.length)];
-                        setDailyHukamnama(randomHukam);
-                        playGentleBell(528);
-                      }}
-                      className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition cursor-pointer"
-                      title="दूसरा हुक्मनामा देखें (Next Hukamnama)"
-                    >
-                      🔄 {lang === 'pa' ? 'ਹੋਰ ਹੁਕਮਨਾਮਾ' : lang === 'en' ? 'Another' : 'अन्य हुक्मनामा'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Verse Display */}
-                <div className="p-3.5 bg-amber-100/40 rounded-xl border border-amber-200 text-center">
-                  <p className="text-sm sm:text-base font-black text-[#8B0000] italic leading-relaxed whitespace-pre-line m-0">
-                    "{lang === 'pa' ? (dailyHukamnama.versePa || dailyHukamnama.verseHi) : lang === 'en' ? (dailyHukamnama.verseEn || dailyHukamnama.verseHi) : dailyHukamnama.verseHi}"
-                  </p>
-                  <p className="text-xs text-amber-950 font-medium mt-2 pt-2 border-t border-amber-200/70 m-0">
-                    <strong>{lang === 'pa' ? 'ਸਾਰ/ਭਾਵਾਰਥ: ' : lang === 'en' ? 'Essence: ' : 'सार एवं भावार्थ: '}</strong>
-                    {lang === 'pa' ? (dailyHukamnama.meaningPa || dailyHukamnama.meaningHi) : lang === 'en' ? (dailyHukamnama.meaningEn || dailyHukamnama.meaningHi) : dailyHukamnama.meaningHi}
-                  </p>
-                </div>
-
-                {/* Action Bar */}
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <button
-                    onClick={() => {
-                      const textToCopy = `${dailyHukamnama.raagHi}\n\n"${dailyHukamnama.verseHi}"\n\nभावार्थ: ${dailyHukamnama.meaningHi}\n\n— साहेब वर्ल्ड (Saheb World PWA)`;
-                      navigator.clipboard.writeText(textToCopy);
-                      showToast(lang === 'pa' ? 'ਹੁਕਮਨਾਮਾ ਕਾਪੀ ਹੋ ਗਿਆ!' : lang === 'en' ? 'Hukamnama copied!' : 'हुक्मनामा क्लिपबोर्ड पर कॉपी हुआ!');
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[11px] font-bold border border-amber-300 transition cursor-pointer"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>{lang === 'pa' ? 'ਕਾਪੀ ਕਰੋ' : lang === 'en' ? 'Copy' : 'प्रतिलिपि'}</span>
-                  </button>
-
-                  <button
-                    onClick={handleSocialShare}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-[11px] font-bold shadow-xs transition cursor-pointer"
-                  >
-                    <Share2 className="w-3.5 h-3.5" />
-                    <span>{lang === 'pa' ? 'ਸਾਂਝੀ ਕਰੋ' : lang === 'en' ? 'Share' : 'साझा करें'}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const vault6 = vaults.find(v => v.id === 6);
-                      if (vault6) openVault(vault6);
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition cursor-pointer"
-                  >
-                    <span>📖 {lang === 'pa' ? 'ਗ੍ਰੰਥ ਖੋਲ੍ਹੋ' : lang === 'en' ? 'Open Granth' : 'ग्रंथ देखें'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* =====================================================================
-                  2. DAILY AFFIRMATION SECTION (Rotating Daily Soul Affirmation)
-                 ===================================================================== */}
-              <div className="mb-5 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50/80 to-yellow-50 border border-amber-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <Sparkles className="w-4 h-4 text-orange-600" />
-                    <span className="font-extrabold text-xs text-[#8B0000]">
-                      {lang === 'pa' ? 'ਅੱਜ ਦਾ ਆਤਮ-ਸੰਕਲਪ (Daily Affirmation)' : lang === 'en' ? 'Daily Soul Affirmation' : 'आज का आत्म-संकल्प (Daily Affirmation)'}
-                    </span>
-                    <span className="text-[10px] text-gray-500 bg-white/80 px-1.5 py-0.2 rounded border border-amber-200">
-                      {lang === 'pa' ? dailyAffirmation.sourcePa : lang === 'en' ? dailyAffirmation.sourceEn : dailyAffirmation.sourceHi}
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm font-bold text-gray-900 italic m-0">
-                    "{lang === 'pa' ? dailyAffirmation.affirmationPa : lang === 'en' ? dailyAffirmation.affirmationEn : dailyAffirmation.affirmationHi}"
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                  <span className="text-[10px] font-mono text-amber-900 font-bold bg-amber-100/90 px-2 py-1 rounded-md border border-amber-300">
-                    {affirmationCount} {lang === 'pa' ? 'ਵਾਰ ਧਾਰਿਆ' : lang === 'en' ? 'affirmed' : 'बार धारण किया'}
-                  </span>
-                  <button
-                    onClick={handleAffirmationCommit}
-                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-700 to-orange-600 hover:brightness-110 text-white font-black text-xs shadow-xs active:scale-95 transition cursor-pointer flex items-center gap-1"
-                  >
-                    <span>🙏 {lang === 'pa' ? 'ਆਤਮਸਾਤ ਕੀਤਾ (+1)' : lang === 'en' ? 'I Affirm (+1)' : 'आत्मसात किया (+१)'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* =====================================================================
-                  3. DAILY SADHANA PROGRESS & 7-DAY LINE CHART (Recharts Integration)
-                 ===================================================================== */}
-              <div className="mb-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#FFFDF9] via-[#FAF3E8] to-[#F5ECE0] border-2 border-amber-300 shadow-md">
-                {/* Header: Title & Streak Badge */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-amber-200/80">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-[#8B0000] flex items-center justify-center text-white shadow-sm shrink-0">
-                      <Flame className="w-5 h-5 fill-amber-300 text-amber-200" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-sm sm:text-base text-[#8B0000] m-0 flex items-center gap-1.5">
-                        <span>
-                          {lang === 'pa' ? 'ਦੈਨਿਕ ਸਾਧਨਾ ਅਤੇ ਧਿਆਨ ਟੀਚਾ' : lang === 'en' ? 'Daily Sadhana Progress & Streak' : 'दैनिक साधना एवं ध्यान संकल्प'}
-                        </span>
-                      </h4>
-                      <p className="text-[11px] text-amber-900/80 font-medium m-0">
-                        {lang === 'pa' ? 'ਸਤਿਗੁਰੂ ਸਿਮਰਨ ਅਤੇ ਨਿੱਤ ਧਿਆਨ ਅਭਿਆਸ' : lang === 'en' ? 'Daily meditation discipline, streak & goals' : 'सद्गुरु सुमिरन एवं नित्य ध्यान साधना'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Streak Badge & Chart Toggle */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowSadhanaChart(!showSadhanaChart)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition flex items-center gap-1 cursor-pointer ${
-                        showSadhanaChart
-                          ? 'bg-[#8B0000] text-white border-[#8B0000] shadow-xs'
-                          : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                      }`}
-                      title="७-दिवसीय लाइन चार्ट टॉगल करें"
-                    >
-                      <BarChart2 className="w-3.5 h-3.5" />
-                      <span>{lang === 'pa' ? '੭-ਦਿਨ ਚਾਰਟ' : lang === 'en' ? '7-Day Chart' : '७-दिवसीय चार्ट'}</span>
-                    </button>
-
-                    <div className="inline-flex items-center gap-1.5 bg-amber-100/90 border border-amber-300/90 px-3 py-1 rounded-full shadow-xs">
-                      <Flame className="w-4 h-4 text-orange-600 fill-orange-500 animate-pulse" />
-                      <span className="text-xs font-black text-amber-950">
-                        {sadhanaStreak} {lang === 'pa' ? 'ਦਿਨ ਨਿਰੰਤਰ (Streak)' : lang === 'en' ? 'Day Streak' : 'दिन निरंतर (Streak)'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 7-Day Visual Streak Indicators */}
-                <div className="mt-3 pt-1 flex items-center justify-between gap-1 max-w-sm mx-auto">
-                  {['सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि', 'रवि'].map((dayLabel, idx) => {
-                    const isActiveDay = idx < Math.min(7, sadhanaStreak);
-                    const isTodayDay = idx === Math.min(6, (sadhanaStreak - 1) % 7);
-                    return (
-                      <div key={idx} className="flex flex-col items-center gap-1 flex-1">
-                        <span className="text-[9px] font-bold text-amber-900/70">
-                          {lang === 'pa'
-                            ? ['ਸੋਮ', 'ਮੰਗਲ', 'ਬੁੱਧ', 'ਵੀਰ', 'ਸ਼ੁੱਕਰ', 'ਸ਼ਨੀ', 'ਐਤ'][idx]
-                            : lang === 'en'
-                            ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]
-                            : dayLabel}
-                        </span>
-                        <div
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
-                            isActiveDay
-                              ? 'bg-gradient-to-tr from-amber-600 to-[#8B0000] text-amber-100 shadow-xs ring-1 ring-amber-400'
-                              : 'bg-amber-100/60 text-amber-400 border border-amber-200'
-                          } ${isTodayDay ? 'ring-2 ring-orange-500 scale-105' : ''}`}
-                          title={`Day ${idx + 1}`}
-                        >
-                          {isActiveDay ? (
-                            <Flame className="w-3.5 h-3.5 fill-amber-300 text-amber-200" />
-                          ) : (
-                            <Circle className="w-2 h-2 fill-amber-300/40 text-amber-300" />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* 7-Day Sadhana Minutes Consistency Line Chart using Recharts */}
-                {showSadhanaChart && (
-                  <div className="mt-3 pt-2 border-t border-amber-200/60 bg-amber-50/50 rounded-xl p-2.5">
-                    <div className="flex items-center justify-between text-xs font-bold text-amber-950 px-1 mb-1">
-                      <span className="flex items-center gap-1">
-                        <TrendingUp className="w-3.5 h-3.5 text-amber-700" />
-                        <span>{lang === 'pa' ? "ਪਿਛਲੇ ੭ ਦਿਨਾਂ ਦੀ ਸਾਧਨਾ ਪ੍ਰਗਤੀ (ਮਿੰਟਾਂ ਵਿੱਚ)" : lang === 'en' ? 'Last 7 Days Sadhana Minutes Trend' : 'विगत ७ दिनों की साधना प्रगति (मिनटों में)'}</span>
-                      </span>
-                      <span className="text-[10px] text-gray-500">
-                        {lang === 'pa' ? `ਦੈਨਿਕ ਟੀਚਾ: ${dailyGoalMinutes} ਮਿੰਟ` : lang === 'en' ? `Target: ${dailyGoalMinutes}m` : `दैनिक लक्ष्य: ${dailyGoalMinutes} मिनट`}
-                      </span>
-                    </div>
-                    <SadhanaLineChart data={sadhanaHistory} dailyGoal={dailyGoalMinutes} />
-                  </div>
-                )}
-
-                {/* Progress Bar & Numerical Counter */}
-                <div className="mt-4 bg-white/85 p-3 rounded-xl border border-amber-200/90 shadow-xs space-y-2">
-                  <div className="flex justify-between items-center text-xs font-bold">
-                    <div className="flex items-center gap-1.5 text-amber-950">
-                      <Target className="w-4 h-4 text-[#8B0000]" />
-                      <span>
-                        {lang === 'pa' ? 'ਅੱਜ ਦੀ ਸਾਧਨਾ:' : lang === 'en' ? "Today's Sadhana:" : 'आज की साधना:'}
-                      </span>
-                      <span className="text-sm font-black text-[#8B0000]">{todaySadhanaMinutes}</span>
-                      <span className="text-gray-500">/ {dailyGoalMinutes} {lang === 'pa' ? 'ਮਿੰਟ' : lang === 'en' ? 'min' : 'मिनट'}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {todaySadhanaMinutes >= dailyGoalMinutes ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold flex items-center gap-1 border border-emerald-300 shadow-xs">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          {lang === 'pa' ? 'ਟੀਚਾ ਪੂਰਾ!' : lang === 'en' ? 'Goal Reached!' : 'लक्ष्य पूर्ण!'}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-amber-800 font-medium">
-                          {lang === 'pa' ? `ਬਾਕੀ: ${dailyGoalMinutes - todaySadhanaMinutes} ਮਿੰਟ` : lang === 'en' ? `Remaining: ${dailyGoalMinutes - todaySadhanaMinutes}m` : `शेष: ${dailyGoalMinutes - todaySadhanaMinutes} मिनट`}
-                        </span>
-                      )}
-                      <span className="text-xs font-black text-[#8B0000]">
-                        {Math.min(100, Math.round((todaySadhanaMinutes / dailyGoalMinutes) * 100))}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Linear Progress Bar */}
-                  <div className="w-full bg-amber-100 h-2.5 rounded-full overflow-hidden border border-amber-300/50 shadow-inner">
-                    <div
-                      className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-[#8B0000] transition-all duration-500 rounded-full"
-                      style={{ width: `${Math.min(100, Math.round((todaySadhanaMinutes / dailyGoalMinutes) * 100))}%` }}
-                    />
-                  </div>
-
-                  {/* Celebratory Banner when Goal Reached */}
-                  {todaySadhanaMinutes >= dailyGoalMinutes && (
-                    <div className="pt-1 flex items-center justify-between text-xs bg-emerald-50 text-emerald-900 p-2.5 rounded-lg border border-emerald-200">
-                      <span className="font-bold flex items-center gap-1.5 text-[11px] sm:text-xs">
-                        <span>🌹</span>
-                        <span>
-                          {lang === 'pa' ? 'ਵਧਾਈ! ਅੱਜ ਦੀ ਸਾਧਨਾ ਸੰਪੰਨ ਹੋਈ। ਸਾਹਿਬ ਬੰਦਗੀ! 🙏' : lang === 'en' ? 'Blessed! Daily sadhana goal achieved. Saheb Bandagi! 🙏' : 'बधाई! आज का पावन साधना लक्ष्य संपन्न। साहेब बंदगी साहेब! 🙏'}
-                        </span>
-                      </span>
-                      <button
-                        onClick={() => {
-                          confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-                          playGentleBell(528);
-                        }}
-                        className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-md text-[10px] font-bold shadow-xs active:scale-95 transition cursor-pointer"
-                      >
-                        {lang === 'pa' ? 'ਜਸ਼ਨ ਮਨਾਓ ✨' : lang === 'en' ? 'Celebrate ✨' : 'उत्सव मनाएं ✨'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions: Quick Log Sadhana & Goal Selection */}
-                <div className="mt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-amber-200/60">
-                  {/* Quick Minutes Add Buttons */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-bold text-amber-900/80 mr-0.5">
-                      {lang === 'pa' ? 'ਸਾਧਨਾ ਜੋੜੋ:' : lang === 'en' ? 'Add Time:' : 'साधना जोड़ें:'}
-                    </span>
-                    {[5, 10, 15, 30].map(mins => (
-                      <button
-                        key={mins}
-                        onClick={() => handleAddSadhanaMinutes(mins)}
-                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold shadow-xs transition transform active:scale-95 cursor-pointer"
-                      >
-                        +{mins} {lang === 'pa' ? 'ਮਿੰ' : lang === 'en' ? 'min' : 'मि.'}
-                      </button>
-                    ))}
-                    {todaySadhanaMinutes > 0 && (
-                      <button
-                        onClick={handleResetSadhana}
-                        className="p-1 rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 text-[10px] font-bold cursor-pointer"
-                        title={lang === 'pa' ? 'ਰੀਸੈੱਟ' : lang === 'en' ? 'Reset' : 'रीसेट'}
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Set Goal Buttons */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-bold text-amber-900/80 mr-0.5">
-                      {lang === 'pa' ? 'ਟੀਚਾ:' : lang === 'en' ? 'Goal:' : 'लक्ष्य:'}
-                    </span>
-                    {[10, 15, 21, 30].map(goal => (
-                      <button
-                        key={goal}
-                        onClick={() => handleSetDailyGoal(goal)}
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition cursor-pointer ${
-                          dailyGoalMinutes === goal
-                            ? 'bg-[#8B0000] text-white shadow-xs'
-                            : 'bg-amber-100/80 text-amber-900 hover:bg-amber-200 border border-amber-300/60'
-                        }`}
-                      >
-                        {goal}m
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* =====================================================================
-                  4. PROGRESS INSIGHTS & DATA BACKUP / RESTORE TOOL
-                 ===================================================================== */}
-              <div className="mb-6 p-4 rounded-2xl bg-white border border-amber-300 shadow-sm space-y-3">
-                <div className="flex items-center justify-between border-b border-amber-200 pb-2">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-amber-700" />
-                    <h4 className="font-extrabold text-xs sm:text-sm text-[#8B0000] m-0">
-                      {lang === 'pa' ? 'ਸਾਧਨਾ ਪ੍ਰਗਤੀ ਅੰਕੜੇ ਅਤੇ ਬੈਕਅੱਪ ਟੂਲ' : lang === 'en' ? 'Progress Insights & Backup / Restore' : 'साधना प्रगति अंतर्दृष्टि एवं डेटा बैकअप'}
-                    </h4>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                    {lang === 'pa' ? 'ਸਥਾਨਕ ਸੁਰੱਖਿਆ ✓' : lang === 'en' ? 'Local Vault Active ✓' : 'लोकल वॉल्ट सुरक्षित ✓'}
-                  </span>
-                </div>
-
-                {/* Metric Badges */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-center">
-                    <span className="text-[10px] text-gray-500 block">
-                      {lang === 'pa' ? 'ਕੁੱਲ ੭-ਦਿਨ ਸਾਧਨਾ' : lang === 'en' ? '7-Day Sadhana' : 'कुल ७-दिवसीय साधना'}
-                    </span>
-                    <span className="text-sm font-black text-amber-900">
-                      {sadhanaHistory.reduce((acc, curr) => acc + curr.minutes, 0)} {lang === 'pa' ? 'ਮਿੰਟ' : lang === 'en' ? 'min' : 'मिनट'}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-center">
-                    <span className="text-[10px] text-gray-500 block">
-                      {lang === 'pa' ? 'ਪੜ੍ਹੇ ਅਧਿਆਇ' : lang === 'en' ? 'Chapters Read' : 'अध्याय वाचन'}
-                    </span>
-                    <span className="text-sm font-black text-amber-900">
-                      {Object.values(vaultReadChapters).reduce((acc, arr) => acc + arr.length, 0)} {lang === 'pa' ? 'ਅਧਿਆਇ' : lang === 'en' ? 'chapters' : 'अध्याय'}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-center">
-                    <span className="text-[10px] text-gray-500 block">
-                      {lang === 'pa' ? 'ਡਾਇਰੀ ਪ੍ਰਵੇਸ਼' : lang === 'en' ? 'Journal Entries' : 'डायरी प्रविष्टियाँ'}
-                    </span>
-                    <span className="text-sm font-black text-amber-900">
-                      {journalEntries.length} {lang === 'pa' ? 'ਨੋਟਸ' : lang === 'en' ? 'notes' : 'प्रविष्टियां'}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-center">
-                    <span className="text-[10px] text-gray-500 block">
-                      {lang === 'pa' ? 'ਨਿਰੰਤਰਤਾ ਲੜੀ' : lang === 'en' ? 'Active Streak' : 'निरंतरता लड़ी'}
-                    </span>
-                    <span className="text-sm font-black text-orange-700 flex items-center justify-center gap-1">
-                      <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-600" />
-                      {sadhanaStreak} {lang === 'pa' ? 'ਦਿਨ' : lang === 'en' ? 'days' : 'दिन'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Backup & Restore Action Toolbar */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 border-t border-amber-200/60">
-                  <p className="text-[10px] text-gray-500 m-0">
-                    {lang === 'pa' ? "ਤੁਹਾਡਾ ਸਾਧਨਾ ਡਾਟਾ ਪੂਰੀ ਤਰ੍ਹਾਂ ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਉੱਤੇ ਸੁਰੱਖਿਅਤ ਹੈ।" : lang === 'en' ? 'Your sacred sadhana progress is stored locally on this device.' : 'आपकी समस्त साधना, डायरी और वाचन प्रगति आपके डिवाइस पर सुरक्षित है।'}
-                  </p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={handleExportBackup}
-                      className="px-3 py-1.5 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs flex items-center gap-1 cursor-pointer transition active:scale-95"
-                      title="Download JSON Backup"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>{lang === 'pa' ? 'ਬੈਕਅੱਪ ਡਾਊਨਲੋਡ' : lang === 'en' ? 'Export Backup' : 'बैकअप डाउनलोड'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => backupFileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-lg border border-amber-400 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs shadow-xs flex items-center gap-1 cursor-pointer transition active:scale-95"
-                      title="Restore JSON Backup"
-                    >
-                      <Upload className="w-3.5 h-3.5 text-amber-800" />
-                      <span>{lang === 'pa' ? 'ਬੈਕਅੱਪ ਰੀਸਟੋਰ' : lang === 'en' ? 'Restore Data' : 'डेटा पुनर्स्थापना'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
               {/* Section Header */}
               <div className="flex justify-between items-center mb-3">
@@ -2793,9 +2342,10 @@ export default function App() {
                   </p>
                   <button
                     onClick={() => {
-                      setInjectionVaultId(selectedVault.id);
-                      setInjectionTarget('vault');
-                      setShowDataInjector(true);
+                      handleOpenDataInjector(() => {
+                        setInjectionVaultId(selectedVault.id);
+                        setInjectionTarget('vault');
+                      });
                     }}
                     className="px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold shadow inline-flex items-center gap-1.5"
                   >
@@ -2971,8 +2521,9 @@ export default function App() {
                 <p className="text-gray-600 m-0">सुरक्षा एनक्रिप्शन: <strong>AES-256 Local Vault Active</strong></p>
                 <button
                   onClick={() => {
-                    setShowDataInjector(true);
-                    setShowAdminDashboard(false);
+                    handleOpenDataInjector(() => {
+                      setShowAdminDashboard(false);
+                    });
                   }}
                   className="w-full py-2 mt-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-bold text-xs cursor-pointer"
                 >
@@ -3011,6 +2562,21 @@ export default function App() {
       <footer className="footer-anchor">
         <span>{t.footer}</span>
       </footer>
+
+      <AdminPinModal
+        isOpen={showPinModal}
+        onClose={() => setShowPinModal(false)}
+        onSuccess={() => {
+          setIsAdminUnlocked(true);
+          setShowPinModal(false);
+          if (pendingInjectorAction) {
+            pendingInjectorAction();
+            setPendingInjectorAction(null);
+          } else {
+            setShowDataInjector(true);
+          }
+        }}
+      />
 
       <QuoteCardModal 
         isOpen={showQuoteCardModal} 
