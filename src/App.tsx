@@ -44,6 +44,7 @@ import {
   CheckCheck,
   Sliders,
   Bell,
+  BellOff,
   Heart,
   Award,
   Book,
@@ -87,7 +88,6 @@ import { SpiritualAudioPlayer } from './components/SpiritualAudioPlayer';
 import { QuoteCardModal } from './components/QuoteCardModal';
 import { SplashModal } from './components/SplashModal';
 import { OfflineBanner } from './components/OfflineBanner';
-import { AdminPinModal } from './components/AdminPinModal';
 import { SacredReaderModal } from './components/SacredReaderModal';
 import { SadhanaAlarmModal } from './components/SadhanaAlarmModal';
 import { DailyResolutionModal } from './components/DailyResolutionModal';
@@ -103,12 +103,21 @@ import { LiveMeditationOverlay } from './components/LiveMeditationOverlay';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Trophy, User as UserIcon, Cloud } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from './utils/firebase';
+import { collection, doc, getDoc, getDocs, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  auth,
+  db,
+  checkGoogleRedirectResult,
+  isVerifiedAdminUser,
+  handleFirestoreError,
+  OperationType,
+} from './utils/firebase';
+import { isBellSoundEnabled, setBellSoundEnabled } from './utils/audioSynth';
 
 export default function App() {
   const { lang, setLang, t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const isAuthorizedAdmin = isVerifiedAdminUser(currentUser);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [showSacredReaderModal, setShowSacredReaderModal] = useState(false);
@@ -139,26 +148,32 @@ export default function App() {
   const [vaults, setVaults] = useState<GranthVaultSlot[]>(() => getStoredVaults());
   const [swadhyayData, setSwadhyayData] = useState<SwadhyayStepSlot>(() => getStoredSwadhyay());
   const [showDataInjector, setShowDataInjector] = useState(false);
-  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
-  const [showPinModal, setShowPinModal] = useState(false);
-  const [pendingInjectorAction, setPendingInjectorAction] = useState<(() => void) | null>(null);
 
   const handleOpenDataInjector = (onUnlockAction?: () => void) => {
-    if (isAdminUnlocked) {
-      if (onUnlockAction) onUnlockAction();
-      setShowDataInjector(true);
-    } else {
-      setPendingInjectorAction(() => () => {
-        if (onUnlockAction) onUnlockAction();
-        setShowDataInjector(true);
-      });
-      setShowPinModal(true);
+    if (!isAuthorizedAdmin) {
+      showToast(
+        lang === 'pa'
+          ? 'ਸਿਰਫ਼ ਪ੍ਰਮਾਣਿਤ ਪ੍ਰਸ਼ਾਸਕ Google ਖਾਤੇ ਲਈ ਉਪਲਬਧ ਹੈ'
+          : lang === 'en'
+          ? 'Restricted to verified Admin Google account only'
+          : 'यह सुविधा केवल प्रमाणित प्रशासक Google खाते के लिए सुरक्षित है 🔒'
+      );
+      return;
     }
+    if (onUnlockAction) onUnlockAction();
+    setShowDataInjector(true);
   };
   const [injectionJson, setInjectionJson] = useState('');
   const [injectionTarget, setInjectionTarget] = useState<'swadhyay' | 'vault'>('swadhyay');
   const [injectionVaultId, setInjectionVaultId] = useState<number>(1);
   const [injectionFeedback, setInjectionFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAuthorizedAdmin) {
+      setShowDataInjector(false);
+      setShowAdminDashboard(false);
+    }
+  }, [isAuthorizedAdmin]);
 
   // Themes & UI Preferences (White, Pothi, Night, and True Black OLED)
   const [currentTheme, setCurrentTheme] = useState<'white' | 'pothi' | 'night' | 'trueblack'>('pothi');
@@ -184,25 +199,14 @@ export default function App() {
     content: string;
   }
 
-  // Secure Admin CMS & Authentication States
-  const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
-  const [adminPasswordInput, setAdminPasswordInput] = useState('');
-  const [showAdminPassword, setShowAdminPassword] = useState(false);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => localStorage.getItem('saheb_admin_auth') === 'true');
-  const [adminLoginAttempts, setAdminLoginAttempts] = useState(() => {
-    const stored = localStorage.getItem('saheb_admin_attempts');
-    return stored ? parseInt(stored, 10) : 0;
-  });
-  const [adminLockoutUntil, setAdminLockoutUntil] = useState<number>(() => {
-    const stored = localStorage.getItem('saheb_admin_lockout_until');
-    return stored ? parseInt(stored, 10) : 0;
-  });
+  // Secure Role-Gated Admin CMS State (Google Verified Admin Only)
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [adminHoldProgress, setAdminHoldProgress] = useState(0);
   const logoHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
   const logoHoldIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogoHoldStart = () => {
+    if (!isAuthorizedAdmin) return;
     setAdminHoldProgress(0);
     let elapsed = 0;
     logoHoldIntervalRef.current = setInterval(() => {
@@ -213,7 +217,7 @@ export default function App() {
     logoHoldTimerRef.current = setTimeout(() => {
       if (logoHoldIntervalRef.current) clearInterval(logoHoldIntervalRef.current);
       setAdminHoldProgress(0);
-      setShowAdminLoginModal(true);
+      setShowAdminDashboard(true);
       playGentleBell(528);
     }, 5000);
   };
@@ -222,51 +226,6 @@ export default function App() {
     if (logoHoldTimerRef.current) clearTimeout(logoHoldTimerRef.current);
     if (logoHoldIntervalRef.current) clearInterval(logoHoldIntervalRef.current);
     setAdminHoldProgress(0);
-  };
-
-  const handleAdminLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const now = Date.now();
-    if (adminLockoutUntil > now) {
-      const remainingMins = Math.ceil((adminLockoutUntil - now) / 60000);
-      showToast(`सुरक्षा लॉकआउट सक्रिय: ${remainingMins} मिनट बाद पुनः प्रयास करें।`);
-      return;
-    }
-
-    if (adminPasswordInput === 'Satyanaam108') {
-      setIsAdminAuthenticated(true);
-      localStorage.setItem('saheb_admin_auth', 'true');
-      localStorage.removeItem('saheb_admin_attempts');
-      localStorage.removeItem('saheb_admin_lockout_until');
-      setAdminLoginAttempts(0);
-      setAdminLockoutUntil(0);
-      setShowAdminLoginModal(false);
-      setShowAdminDashboard(true);
-      setAdminPasswordInput('');
-      playGentleBell(528);
-      showToast('🔐 एडमिन कपाट अनलॉक सफल! (Admin Dashboard Unlocked)');
-    } else {
-      const nextAttempts = adminLoginAttempts + 1;
-      setAdminLoginAttempts(nextAttempts);
-      localStorage.setItem('saheb_admin_attempts', String(nextAttempts));
-      playGentleBell(396);
-
-      if (nextAttempts >= 3) {
-        const lockoutTime = now + 15 * 60 * 1000;
-        setAdminLockoutUntil(lockoutTime);
-        localStorage.setItem('saheb_admin_lockout_until', String(lockoutTime));
-        showToast('⚠️ ३ से अधिक गलत प्रयास! १५ मिनट के लिए सुरक्षा लॉकआउट सक्रिय।');
-      } else {
-        showToast(`❌ गलत कूंजी! शेष प्रयास: ${3 - nextAttempts}`);
-      }
-    }
-  };
-
-  const handleAdminSignOut = () => {
-    setIsAdminAuthenticated(false);
-    setShowAdminDashboard(false);
-    localStorage.removeItem('saheb_admin_auth');
-    showToast('🔒 एडमिन सत्र समाप्त (Admin Signed Out)');
   };
 
   // 5 New Advanced Spiritual Features States & Handlers
@@ -379,6 +338,7 @@ export default function App() {
   const [journalDraftSavedTime, setJournalDraftSavedTime] = useState<string | null>(null);
 
   // Audio / Meditation States & Volume
+  const [bellEnabled, setBellEnabled] = useState<boolean>(() => isBellSoundEnabled());
   const [isPlayingDrone, setIsPlayingDrone] = useState(false);
   const [tanpuraVolume, setTanpuraVolumeState] = useState<number>(0.75);
   const [showAnahadVolumeSlider, setShowAnahadVolumeSlider] = useState(false);
@@ -386,6 +346,18 @@ export default function App() {
   const [breathingPhase, setBreathingPhase] = useState<'पूरक' | 'कुंभक' | 'रेचक' | 'शून्य'>('पूरक');
   const [breathingTimerActive, setBreathingTimerActive] = useState(false);
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
+
+  const toggleBellSound = () => {
+    const next = !bellEnabled;
+    setBellSoundEnabled(next);
+    setBellEnabled(next);
+    if (next) {
+      playGentleBell(528);
+      showToast(lang === 'pa' ? '🔔 ਘੰਟੀ ਆਵਾਜ਼ ਚਾਲੂ ਕੀਤੀ ਗਈ' : lang === 'en' ? '🔔 Bell sound enabled' : '🔔 घंटी ध्वनि चालू की गई');
+    } else {
+      showToast(lang === 'pa' ? '🔕 ਘੰਟੀ ਆਵਾਜ਼ ਬੰਦ ਕੀਤੀ ਗਈ' : lang === 'en' ? '🔕 Bell sound muted' : '🔕 घंटी ध्वनि बंद की गई');
+    }
+  };
 
   // Dedicated Reading Timer for Vault Reader
   const [readingSeconds, setReadingSeconds] = useState(0);
@@ -460,11 +432,24 @@ export default function App() {
     return localStorage.getItem('saheb_sadhana_celebrated_date') === today;
   });
 
-  // Firebase Auth State Listener & Multi-Device Cloud Sync
+  // Firebase Auth State Listener, Redirect Completion & Multi-Device Cloud Sync
   useEffect(() => {
+    checkGoogleRedirectResult().then((redirectResult) => {
+      if (redirectResult?.user) {
+        showToast(
+          lang === 'pa'
+            ? `ਸੁਆਗਤ ਹੈ, ${redirectResult.user.displayName || 'ਸਾਧਕ'} 🙏`
+            : lang === 'en'
+            ? `Welcome, ${redirectResult.user.displayName || 'Devotee'} 🙏`
+            : `सादर प्रणाम, ${redirectResult.user.displayName || 'साधक हंस'} 🙏`
+        );
+      }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
+        const userPath = `users/${user.uid}`;
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
@@ -483,23 +468,67 @@ export default function App() {
           } else {
             await setDoc(userDocRef, {
               userId: user.uid,
-              displayName: user.displayName || 'साधक हंस',
-              email: user.email || '',
+              displayName: (user.displayName || 'साधक हंस').slice(0, 100),
               photoURL: user.photoURL || null,
               sadhanaMinutes: todaySadhanaMinutes,
               sadhanaStreak: sadhanaStreak,
               dailyGoalMinutes: dailyGoalMinutes,
               lastActiveDate: new Date().toISOString().slice(0, 10),
-              createdAt: Date.now(),
-              updatedAt: Date.now()
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
             });
           }
         } catch (err) {
-          console.warn("Firebase user sync notice:", err);
+          console.warn('Firebase user sync notice:', err, userPath);
         }
       }
     });
     return () => unsubscribe();
+  }, []);
+
+  // Load published Granth Vault slots from Firestore on startup
+  useEffect(() => {
+    let active = true;
+    getDocs(collection(db, 'granth_slots'))
+      .then((snap) => {
+        if (!active || snap.empty) return;
+        const vaultUpdates = new Map<number, GranthVaultSlot['chapters']>();
+        let swadhyayUpdate: Partial<SwadhyayStepSlot> | null = null;
+        snap.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (data.targetType === 'vault' && typeof data.vaultId === 'number' && Array.isArray(data.chapters)) {
+            vaultUpdates.set(data.vaultId, data.chapters);
+          } else if (data.targetType === 'swadhyay' && data.swadhyayPayload && typeof data.swadhyayPayload === 'object') {
+            swadhyayUpdate = data.swadhyayPayload as Partial<SwadhyayStepSlot>;
+          }
+        });
+        if (vaultUpdates.size > 0) {
+          setVaults((prev) => {
+            const next = prev.map((v) => {
+              const cloudCh = vaultUpdates.get(v.id);
+              if (cloudCh && cloudCh.length > 0) {
+                return { ...v, slotStatus: 'LOADED' as const, chapters: cloudCh };
+              }
+              return v;
+            });
+            saveStoredVaults(next);
+            return next;
+          });
+        }
+        if (swadhyayUpdate) {
+          setSwadhyayData((prev) => {
+            const merged = { ...prev, ...swadhyayUpdate };
+            saveStoredSwadhyay(merged);
+            return merged;
+          });
+        }
+      })
+      .catch(() => {
+        // Offline or initial empty collection: retain local storage
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleForceCloudSync = async () => {
@@ -508,22 +537,32 @@ export default function App() {
       return;
     }
     setIsCloudSyncing(true);
+    const userPath = `users/${currentUser.uid}`;
     try {
-      await setDoc(doc(db, 'users', currentUser.uid), {
-        userId: currentUser.uid,
-        displayName: currentUser.displayName || 'साधक हंस',
-        email: currentUser.email || '',
-        photoURL: currentUser.photoURL || null,
-        sadhanaMinutes: todaySadhanaMinutes,
-        sadhanaStreak: sadhanaStreak,
-        dailyGoalMinutes: dailyGoalMinutes,
-        lastActiveDate: new Date().toISOString().slice(0, 10),
-        updatedAt: Date.now()
-      }, { merge: true });
+      const userRef = doc(db, 'users', currentUser.uid);
+      const existingSnap = await getDoc(userRef);
+      await setDoc(
+        userRef,
+        {
+          userId: currentUser.uid,
+          displayName: (currentUser.displayName || 'साधक हंस').slice(0, 100),
+          photoURL: currentUser.photoURL || null,
+          sadhanaMinutes: todaySadhanaMinutes,
+          sadhanaStreak: sadhanaStreak,
+          dailyGoalMinutes: dailyGoalMinutes,
+          lastActiveDate: new Date().toISOString().slice(0, 10),
+          ...(existingSnap.exists() ? {} : { createdAt: serverTimestamp() }),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
       showToast(lang === 'pa' ? 'ਸਾਧਨਾ ਕਲਾਊਡ ਤੇ ਸੁਰੱਖਿਅਤ ਹੋਈ! 🙏' : lang === 'en' ? 'Sadhana synced to Cloud! 🙏' : 'सद्गुरु कृपा! साधना क्लाउड पर सुरक्षित हो गई। 🙏');
     } catch (err) {
-      console.warn("Cloud sync error:", err);
-      showToast('क्लाउड समन्वय त्रुटि: कृपया इंटरनेट कनेक्शन जांचें');
+      try {
+        handleFirestoreError(err, OperationType.WRITE, userPath);
+      } catch {
+        showToast('क्लाउड समन्वय त्रुटि: कृपया इंटरनेट व अनुमति की जांच करें');
+      }
     } finally {
       setIsCloudSyncing(false);
     }
@@ -827,7 +866,7 @@ export default function App() {
       setDoc(doc(db, 'users', currentUser.uid), {
         sadhanaMinutes: newMinutes,
         lastActiveDate: today,
-        updatedAt: Date.now()
+        updatedAt: serverTimestamp()
       }, { merge: true }).catch(() => {});
     }
 
@@ -860,7 +899,7 @@ export default function App() {
           setDoc(doc(db, 'users', currentUser.uid), {
             sadhanaStreak: nextStreak,
             lastActiveDate: today,
-            updatedAt: Date.now()
+            updatedAt: serverTimestamp()
           }, { merge: true }).catch(() => {});
         }
       }
@@ -1050,8 +1089,9 @@ export default function App() {
     return matchesText && matchesCategory;
   });
 
-  // Dynamic Data Layer JSON Injection
-  const handleInjectJson = () => {
+  // Dynamic Data Layer JSON Injection (Admin Only)
+  const handleInjectJson = async () => {
+    if (!isAuthorizedAdmin || !currentUser) return;
     try {
       const parsed = JSON.parse(injectionJson);
       if (injectionTarget === 'swadhyay') {
@@ -1061,34 +1101,64 @@ export default function App() {
         };
         setSwadhyayData(merged);
         saveStoredSwadhyay(merged);
-        setInjectionFeedback("✅ साखी संग्रह (Swadhyay Step Slot) में डेटा सफलतापूर्वक लोड हुआ!");
+        await setDoc(doc(db, 'granth_slots', 'swadhyay'), {
+          slotId: 'swadhyay',
+          targetType: 'swadhyay',
+          slotStatus: 'LOADED',
+          swadhyayPayload: merged,
+          updatedBy: currentUser.uid,
+          updatedAt: serverTimestamp(),
+        });
+        setInjectionFeedback("✅ साखी संग्रह (Swadhyay Step Slot) में डेटा सफलतापूर्वक लोड व क्लाउड सिंक हुआ!");
       } else {
+        const chapters = Array.isArray(parsed) ? parsed : (parsed.chapters || []);
         const updatedVaults = vaults.map(v => {
           if (v.id === injectionVaultId) {
             return {
               ...v,
               slotStatus: 'LOADED' as const,
-              chapters: Array.isArray(parsed) ? parsed : (parsed.chapters || [])
+              chapters,
             };
           }
           return v;
         });
         setVaults(updatedVaults);
         saveStoredVaults(updatedVaults);
-        setInjectionFeedback(`✅ वॉल्ट #${injectionVaultId} में डेटा सफलतापूर्वक लोड हुआ!`);
+        const slotId = `vault_${injectionVaultId}`;
+        await setDoc(doc(db, 'granth_slots', slotId), {
+          slotId,
+          targetType: 'vault',
+          vaultId: injectionVaultId,
+          slotStatus: 'LOADED',
+          chapters,
+          updatedBy: currentUser.uid,
+          updatedAt: serverTimestamp(),
+        });
+        setInjectionFeedback(`✅ वॉल्ट #${injectionVaultId} में डेटा सफलतापूर्वक लोड व क्लाउड सिंक हुआ!`);
       }
       setTimeout(() => setInjectionFeedback(null), 4000);
-    } catch {
-      setInjectionFeedback("❌ त्रुटि: कृपया वैध JSON स्वरूप प्रदान करें।");
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        setInjectionFeedback("❌ त्रुटि: कृपया वैध JSON स्वरूप प्रदान करें।");
+      } else {
+        setInjectionFeedback("❌ क्लाउड सेव त्रुटि: केवल प्रमाणित प्रशासक ही लिख सकते हैं।");
+      }
     }
   };
 
-  // Reset to empty database slots
-  const handleResetToEmpty = () => {
+  // Reset to empty database slots (Admin Only)
+  const handleResetToEmpty = async () => {
+    if (!isAuthorizedAdmin) return;
     setVaults(INITIAL_EMPTY_VAULTS);
     saveStoredVaults(INITIAL_EMPTY_VAULTS);
     setSwadhyayData(EMPTY_SWADHYAY_SLOT);
     saveStoredSwadhyay(EMPTY_SWADHYAY_SLOT);
+    try {
+      const snap = await getDocs(collection(db, 'granth_slots'));
+      await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+    } catch {
+      // Ignore if offline or empty
+    }
     setInjectionFeedback("ℹ️ सभी डेटा स्लॉट्स को शुद्ध रिक्त स्वरूप (Empty Slots) पर रीसेट कर दिया गया है।");
     showToast("सभी डेटा स्लॉट्स रिक्त कर दिए गए हैं");
     setTimeout(() => setInjectionFeedback(null), 4000);
@@ -1149,7 +1219,7 @@ export default function App() {
             {/* App Icon & Branding Banner */}
             <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-300">
               <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500 shadow-md bg-amber-100 shrink-0">
-                <img src="/icons/kabir-swaroop.png" alt="Saheb World Icon" className="w-full h-full object-cover" />
+                <img src="/icons/icon-512.png" alt="Saheb World Icon" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h4 className="font-bold text-sm text-[#8B0000] m-0">श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ</h4>
@@ -1393,8 +1463,47 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Actions: Anahad Drone + Bhajans + Data Injector */}
-              <div className="flex items-center gap-1.5 shrink-0">
+              {/* Actions: Global Bell Toggle + Anahad Drone + Bhajans + Admin-only Data Injector */}
+              <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                {/* Global Bell Sound On/Off Toggle */}
+                <button
+                  onClick={toggleBellSound}
+                  aria-pressed={bellEnabled}
+                  title={
+                    bellEnabled
+                      ? lang === 'pa'
+                        ? 'ਘੰਟੀ ਆਵਾਜ਼ ਬੰਦ ਕਰੋ'
+                        : lang === 'en'
+                        ? 'Mute Bell Chime Sound'
+                        : 'घंटी ध्वनि बंद करें'
+                      : lang === 'pa'
+                      ? 'ਘੰਟੀ ਆਵਾਜ਼ ਚਾਲੂ ਕਰੋ'
+                      : lang === 'en'
+                      ? 'Enable Bell Chime Sound'
+                      : 'घंटी ध्वनि चालू करें'
+                  }
+                  className={`px-2 py-1 rounded-md border text-[11px] font-bold flex items-center gap-1 transition cursor-pointer ${
+                    bellEnabled
+                      ? 'bg-amber-100/95 text-amber-950 border-amber-400 hover:bg-amber-200'
+                      : 'bg-slate-200 text-slate-700 border-slate-300 hover:bg-slate-300'
+                  }`}
+                >
+                  {bellEnabled ? <Bell className="w-3.5 h-3.5 text-amber-700" /> : <BellOff className="w-3.5 h-3.5 text-slate-600" />}
+                  <span className="text-[11px]">
+                    {bellEnabled
+                      ? lang === 'pa'
+                        ? 'ਘੰਟੀ ਚਾਲੂ'
+                        : lang === 'en'
+                        ? 'Bell On'
+                        : 'घंटी चालू'
+                      : lang === 'pa'
+                      ? 'ਘੰਟੀ ਬੰਦ'
+                      : lang === 'en'
+                      ? 'Bell Off'
+                      : 'घंटी बंद'}
+                  </span>
+                </button>
+
                 <button
                   onClick={toggleAudioDrone}
                   title={isPlayingDrone ? "अनहद नाद विश्राम" : "अनहद नाद तानपूरा प्रारंभ"}
@@ -1424,14 +1533,16 @@ export default function App() {
                   <span className="hidden sm:inline">{lang === 'pa' ? 'ਬਾਣੀ ਭਜਨ' : lang === 'en' ? 'Bhajans' : 'वाणी भजन'}</span>
                 </button>
 
-                {/* Data Injection Button */}
-                <button
-                  onClick={() => handleOpenDataInjector(() => setShowDataInjector(!showDataInjector))}
-                  className="p-1 rounded-md border border-amber-400 bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold cursor-pointer"
-                  title={t.dataInjectorTitle}
-                >
-                  <Database className="w-3.5 h-3.5" />
-                </button>
+                {/* Admin-Only Data Injection Button (Hidden from public users) */}
+                {isAuthorizedAdmin && (
+                  <button
+                    onClick={() => handleOpenDataInjector(() => setShowDataInjector(!showDataInjector))}
+                    className="p-1 rounded-md border border-amber-400 bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold cursor-pointer"
+                    title={t.dataInjectorTitle}
+                  >
+                    <Database className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           </header>
@@ -1479,9 +1590,9 @@ export default function App() {
           </div>
 
           {/* =========================================================================
-              ADMINISTRATIVE DYNAMIC DATA INJECTION MODAL (For Empty Database Slots)
+              ADMINISTRATIVE DYNAMIC DATA INJECTION MODAL (Verified Admin Only)
              ========================================================================= */}
-          {showDataInjector && (
+          {isAuthorizedAdmin && showDataInjector && (
             <div className="mb-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-400 shadow-xl space-y-3">
               <div className="flex justify-between items-center border-b border-amber-200 pb-2">
                 <div className="flex items-center gap-2 font-bold text-xs md:text-sm text-[#8B0000]">
@@ -2982,21 +3093,33 @@ export default function App() {
                   <h5 className="font-bold text-sm text-[#8B0000] m-0">
                     {getVaultTitle(selectedVault).title} — {t.emptySlotLabel}
                   </h5>
-                  <p className="text-xs text-gray-600 max-w-md mx-auto m-0">
-                    यह वॉल्ट अभी पूर्णतः शुद्ध एवं रिक्त है (No pre-loaded text arrays)। प्रशासक किसी भी समय 'डेटा लेयर इंजेक्टर' का उपयोग कर इसमें अध्याय एरे जोड़ सकते हैं।
-                  </p>
-                  <button
-                    onClick={() => {
-                      handleOpenDataInjector(() => {
-                        setInjectionVaultId(selectedVault.id);
-                        setInjectionTarget('vault');
-                      });
-                    }}
-                    className="px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold shadow inline-flex items-center gap-1.5"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>{t.injectDataBtn}</span>
-                  </button>
+                  {isAuthorizedAdmin ? (
+                    <>
+                      <p className="text-xs text-gray-600 max-w-md mx-auto m-0">
+                        यह वॉल्ट अभी पूर्णतः शुद्ध एवं रिक्त है। आप प्रशासक डेटा लेयर इंजेक्टर का उपयोग कर इसमें अध्याय एरे जोड़ सकते हैं।
+                      </p>
+                      <button
+                        onClick={() => {
+                          handleOpenDataInjector(() => {
+                            setInjectionVaultId(selectedVault.id);
+                            setInjectionTarget('vault');
+                          });
+                        }}
+                        className="px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold shadow inline-flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{t.injectDataBtn}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-600 max-w-md mx-auto m-0">
+                      {lang === 'pa'
+                        ? 'ਇਹ ਪਾਵਨ ਗ੍ਰੰਥ ਸਲਾਟ ਜਲਦੀ ਹੀ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾਵੇਗਾ। ਸਾਧਨਾ ਜਾਰੀ ਰੱਖੋ।'
+                        : lang === 'en'
+                        ? 'This sacred scripture vault will be updated soon. Please continue your daily Swadhyay.'
+                        : 'यह पावन ग्रंथ संग्रह शीघ्र ही उपलब्ध कराया जाएगा। कृपया दैनिक स्वाध्याय जारी रखें।'}
+                    </p>
+                  )}
                 </div>
               ) : (
                 /* When Administrator Injected Chapters */
@@ -3181,79 +3304,8 @@ export default function App() {
         </div>
       )}
 
-      {/* 🔐 Admin Login Gatekeeper Modal (Pothi Mode #F4ECD8 parchment leaf theme) */}
-      {showAdminLoginModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-[#F4ECD8] border-2 border-[#D2B48C] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-[#2C1E11]">
-            <div className="flex justify-between items-center border-b border-[#D2B48C] pb-3">
-              <div className="flex items-center gap-2 font-bold text-sm text-[#8B0000]">
-                <Lock className="w-5 h-5 text-amber-700" />
-                <span>🔐 श्री सद्गुरु कबीर साहेब ग्रन्थालय - एडमिन कपाट कूंजी</span>
-              </div>
-              <button
-                onClick={() => setShowAdminLoginModal(false)}
-                className="text-gray-500 hover:text-black p-1 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-[#5D4037] font-medium m-0">
-              श्री सद्गुरु कबीर साहेब ग्रन्थालय — एडमिनिस्ट्रेटर कंटेंट मैनेजमेंट सिस्टम (CMS) में प्रवेश हेतु गुप्त कूंजी दर्ज करें।
-            </p>
-
-            <form onSubmit={handleAdminLoginSubmit} className="space-y-3">
-              <div className="relative">
-                <input
-                  type={showAdminPassword ? "text" : "password"}
-                  value={adminPasswordInput}
-                  onChange={(e) => setAdminPasswordInput(e.target.value)}
-                  placeholder="गुप्त कूंजी (उदा. Satyanaam108)"
-                  className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-[#D2B48C] bg-white text-[#2C1E11] text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAdminPassword(!showAdminPassword)}
-                  className="absolute right-3 top-3 text-gray-500 hover:text-black cursor-pointer"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-              </div>
-
-              {adminLoginAttempts > 0 && (
-                <div className="text-[11px] text-red-700 font-semibold bg-red-50 p-2 rounded-lg border border-red-200">
-                  ⚠️ असफल प्रयास: {adminLoginAttempts} / 3
-                  {adminLockoutUntil > Date.now() && (
-                    <span className="block mt-0.5 text-red-900 font-bold">
-                      लॉकआउट सक्रिय (Lockout active)
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setShowAdminLoginModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-xs border border-[#D2B48C] transition cursor-pointer"
-                >
-                  रद्द करें
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#8B0000] hover:bg-red-900 text-white font-bold text-xs shadow-md transition cursor-pointer"
-                >
-                  अनलॉक करें 🔓
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* 🚀 Admin Content Management System (CMS) Dashboard */}
-      {showAdminDashboard && (
+      {/* 🚀 Admin Content Management System (CMS) Dashboard (Verified Admin Only) */}
+      {isAuthorizedAdmin && showAdminDashboard && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
           <div className="bg-[#FFFDF9] border-2 border-amber-500 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4 text-gray-900">
             <div className="flex justify-between items-center border-b border-amber-300 pb-3">
@@ -3270,14 +3322,14 @@ export default function App() {
             </div>
 
             <p className="text-xs text-gray-700 m-0">
-              प्रशासक महोदय, आप सफलतापूर्वक प्रमाणित हैं। यहाँ से आप साखी संग्रह, वाचन डेटा और दैनिक हुक्मनामा को प्रबंधित व इंजेक्ट कर सकते हैं।
+              प्रशासक महोदय, आप Google खाता ({currentUser?.email}) से प्रमाणित हैं। यहाँ से आप साखी संग्रह और ग्रंथ वॉल्ट डेटा को प्रबंधित व इंजेक्ट कर सकते हैं।
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 space-y-2">
                 <h5 className="font-bold text-amber-900 m-0">📊 डेटा लेयर स्थिति</h5>
                 <p className="text-gray-600 m-0">स्टोरेज उपयोग: <strong>{storageUsageKb} KB</strong></p>
-                <p className="text-gray-600 m-0">सुरक्षा एनक्रिप्शन: <strong>AES-256 Local Vault Active</strong></p>
+                <p className="text-gray-600 m-0">सुरक्षा नियम: <strong>Verified Admin Google Auth</strong></p>
                 <button
                   onClick={() => {
                     handleOpenDataInjector(() => {
@@ -3292,14 +3344,8 @@ export default function App() {
 
               <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 space-y-2">
                 <h5 className="font-bold text-amber-900 m-0">🛡️ सुरक्षा एवं सत्र</h5>
-                <p className="text-gray-600 m-0">मास्टर कूंजी: <strong>Satyanaam108 (Verified)</strong></p>
-                <p className="text-gray-600 m-0">लॉकआउट स्टेटस: <strong>सुरक्षित (0 सक्रिय प्रतिबंध)</strong></p>
-                <button
-                  onClick={handleAdminSignOut}
-                  className="w-full py-2 mt-2 bg-red-700 hover:bg-red-800 text-white rounded-lg font-bold text-xs cursor-pointer"
-                >
-                  सुरक्षित लॉगआउट करें (Sign Out)
-                </button>
+                <p className="text-gray-600 m-0">स्थिति: <strong>Google Admin Verified</strong></p>
+                <p className="text-gray-600 m-0">पब्लिक अपलोड: <strong>पूर्णतः लॉक (Locked)</strong></p>
               </div>
             </div>
 
@@ -3321,21 +3367,6 @@ export default function App() {
       <footer className="footer-anchor">
         <span>{t.footer}</span>
       </footer>
-
-      <AdminPinModal
-        isOpen={showPinModal}
-        onClose={() => setShowPinModal(false)}
-        onSuccess={() => {
-          setIsAdminUnlocked(true);
-          setShowPinModal(false);
-          if (pendingInjectorAction) {
-            pendingInjectorAction();
-            setPendingInjectorAction(null);
-          } else {
-            setShowDataInjector(true);
-          }
-        }}
-      />
 
       <QuoteCardModal 
         isOpen={showQuoteCardModal} 
@@ -3419,6 +3450,8 @@ export default function App() {
         dailyGoal={dailyGoalMinutes}
         onSyncCloud={handleForceCloudSync}
         isSyncing={isCloudSyncing}
+        isAuthorizedAdmin={isAuthorizedAdmin}
+        onOpenAdminInjector={() => handleOpenDataInjector()}
       />
 
       <LiveMeditationOverlay 

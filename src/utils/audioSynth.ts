@@ -1,10 +1,34 @@
 // Offline Meditative Audio Synthesizer using Web Audio API
 
+const BELL_STORAGE_KEY = 'saheb_bell_sound_enabled';
+
 let audioCtx: AudioContext | null = null;
 let droneOsc1: OscillatorNode | null = null;
 let droneOsc2: OscillatorNode | null = null;
 let droneGain: GainNode | null = null;
 let currentTanpuraVolume = 0.7; // default 70%
+
+let bellSoundEnabled = (() => {
+  try {
+    return localStorage.getItem(BELL_STORAGE_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+})();
+
+export function isBellSoundEnabled(): boolean {
+  return bellSoundEnabled;
+}
+
+export function setBellSoundEnabled(enabled: boolean): boolean {
+  bellSoundEnabled = enabled;
+  try {
+    localStorage.setItem(BELL_STORAGE_KEY, enabled ? 'true' : 'false');
+  } catch {
+    // Ignore storage quota / private mode issues
+  }
+  return bellSoundEnabled;
+}
 
 export function setTanpuraVolume(vol: number) {
   currentTanpuraVolume = Math.max(0.05, Math.min(1.0, vol));
@@ -23,16 +47,21 @@ export function getTanpuraVolume(): number {
 
 function getAudioContext(): AudioContext {
   if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     audioCtx = new AudioContextClass();
   }
   if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {});
   }
   return audioCtx;
 }
 
 export function playGentleBell(freq = 432) {
+  if (!bellSoundEnabled) {
+    return;
+  }
   try {
     const ctx = getAudioContext();
     const osc = ctx.createOscillator();
@@ -99,25 +128,24 @@ export function playSatyanaamDhun() {
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
-    
-    // Frequencies for "Sat-ya-naam" meditative tones (approximate)
+
     const notes = [432, 528, 639, 432];
     const duration = 0.8;
-    
+
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
+
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now + i * duration);
-      
+
       gain.gain.setValueAtTime(0, now + i * duration);
       gain.gain.linearRampToValueAtTime(0.2, now + i * duration + 0.1);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + (i + 1) * duration);
-      
+
       osc.connect(gain);
       gain.connect(ctx.destination);
-      
+
       osc.start(now + i * duration);
       osc.stop(now + (i + 1) * duration);
     });

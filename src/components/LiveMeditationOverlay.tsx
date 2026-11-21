@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Users, Music, Flame, LogIn, Heart } from 'lucide-react';
-import { collection, doc, setDoc, deleteDoc, onSnapshot, query, limit } from 'firebase/firestore';
+import { X, Users, Music, Flame, LogIn, Heart, AlertCircle, RefreshCw } from 'lucide-react';
+import { collection, doc, setDoc, deleteDoc, onSnapshot, query, limit, serverTimestamp } from 'firebase/firestore';
 import { Language } from '../context/LanguageContext';
-import { db, auth, loginWithGoogle } from '../utils/firebase';
+import {
+  db,
+  auth,
+  loginWithGoogle,
+  getFirebaseAuthErrorMessage,
+  handleFirestoreError,
+  OperationType,
+} from '../utils/firebase';
 
 interface LiveMeditationOverlayProps {
   isOpen: boolean;
@@ -14,28 +21,28 @@ interface LiveParticipant {
   userId: string;
   userName?: string;
   userPhoto?: string | null;
-  joinedAt?: number;
 }
 
 export function LiveMeditationOverlay({ isOpen, onClose, lang }: LiveMeditationOverlayProps) {
   const [seconds, setSeconds] = useState(0);
   const [liveParticipants, setLiveParticipants] = useState<LiveParticipant[]>([]);
   const [isJoined, setIsJoined] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [authErrorMsg, setAuthErrorMsg] = useState<string | null>(null);
 
   // Real-time Firestore sync for live global meditation
   useEffect(() => {
     if (!isOpen) return;
 
-    // Reset seconds
     setSeconds(0);
+    setAuthErrorMsg(null);
 
-    // Timer
     const interval = setInterval(() => {
       setSeconds(s => s + 1);
     }, 1000);
 
-    // 1. Listen to live participants in Firestore
-    const q = query(collection(db, 'live_sumiran'), limit(30));
+    const path = 'live_sumiran';
+    const q = query(collection(db, path), limit(30));
     const unsubscribeSnapshot = onSnapshot(
       q,
       (snapshot) => {
@@ -46,11 +53,14 @@ export function LiveMeditationOverlay({ isOpen, onClose, lang }: LiveMeditationO
         setLiveParticipants(participants);
       },
       (error) => {
-        console.warn("Live sumiran snapshot note:", error);
+        try {
+          handleFirestoreError(error, OperationType.LIST, path);
+        } catch (err) {
+          console.warn('Live sumiran snapshot note:', err);
+        }
       }
     );
 
-    // 2. Register current authenticated user to live collection
     const currentUid = auth.currentUser?.uid;
     if (currentUid) {
       const presenceRef = doc(db, 'live_sumiran', currentUid);
@@ -58,11 +68,11 @@ export function LiveMeditationOverlay({ isOpen, onClose, lang }: LiveMeditationO
         userId: currentUid,
         userName: auth.currentUser?.displayName || (lang === 'pa' ? 'ਸਾਧਕ ਹੰਸ' : lang === 'en' ? 'Seeker Soul' : 'साधक हंस'),
         userPhoto: auth.currentUser?.photoURL || null,
-        joinedAt: Date.now()
+        joinedAt: serverTimestamp(),
       }).then(() => {
         setIsJoined(true);
       }).catch((err) => {
-        console.warn("Presence registration notice:", err);
+        console.warn('Presence registration notice:', err);
       });
     }
 
@@ -70,7 +80,6 @@ export function LiveMeditationOverlay({ isOpen, onClose, lang }: LiveMeditationO
       clearInterval(interval);
       unsubscribeSnapshot();
 
-      // Clean up presence when leaving
       if (currentUid) {
         deleteDoc(doc(db, 'live_sumiran', currentUid)).catch(() => {});
       }
@@ -80,19 +89,31 @@ export function LiveMeditationOverlay({ isOpen, onClose, lang }: LiveMeditationO
   if (!isOpen) return null;
 
   const handleQuickSignIn = async () => {
+    if (isSigningIn) return;
+    setIsSigningIn(true);
+    setAuthErrorMsg(null);
     try {
       const result = await loginWithGoogle();
-      if (result.user) {
-        await setDoc(doc(db, 'live_sumiran', result.user.uid), {
-          userId: result.user.uid,
-          userName: result.user.displayName || 'साधक हंस',
-          userPhoto: result.user.photoURL || null,
-          joinedAt: Date.now()
-        });
-        setIsJoined(true);
+      if (result.redirected) return;
+      const signedUser = result.credential?.user;
+      if (signedUser) {
+        try {
+          await setDoc(doc(db, 'live_sumiran', signedUser.uid), {
+            userId: signedUser.uid,
+            userName: signedUser.displayName || 'साधक हंस',
+            userPhoto: signedUser.photoURL || null,
+            joinedAt: serverTimestamp(),
+          });
+          setIsJoined(true);
+        } catch (fsErr) {
+          handleFirestoreError(fsErr, OperationType.WRITE, `live_sumiran/${signedUser.uid}`);
+        }
       }
     } catch (err) {
-      console.warn("Quick sign-in in live overlay:", err);
+      const info = getFirebaseAuthErrorMessage(err, lang);
+      setAuthErrorMsg(info.message);
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -223,13 +244,34 @@ export function LiveMeditationOverlay({ isOpen, onClose, lang }: LiveMeditationO
 
         {/* Guest Sign-In Notice if not signed in */}
         {!auth.currentUser && (
-          <button
-            onClick={handleQuickSignIn}
-            className="w-full max-w-xs py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-amber-400/30 text-amber-200 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span>{lang === 'pa' ? 'ਸੂਚੀ ਵਿੱਚ ਆਪਣੀ ਹਾਜ਼ਰੀ ਪਾਓ (Google Login)' : lang === 'en' ? 'Register Presence (Google Login)' : 'लाइव सूची में उपस्थिति दर्ज करें (Google)'}</span>
-          </button>
+          <div className="w-full max-w-xs space-y-2">
+            {authErrorMsg && (
+              <div className="p-2 rounded-xl bg-red-950/80 border border-red-400/50 text-red-100 text-[11px] flex items-start gap-1.5 text-left">
+                <AlertCircle className="w-3.5 h-3.5 text-red-300 shrink-0 mt-0.5" />
+                <span>{authErrorMsg}</span>
+              </div>
+            )}
+            <button
+              onClick={handleQuickSignIn}
+              disabled={isSigningIn}
+              className="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-amber-400/30 text-amber-200 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            >
+              {isSigningIn ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <LogIn className="w-3.5 h-3.5" />}
+              <span>
+                {isSigningIn
+                  ? lang === 'pa'
+                    ? 'ਸਾਈਨ-ਇਨ ਹੋ ਰਿਹਾ ਹੈ...'
+                    : lang === 'en'
+                    ? 'Signing in...'
+                    : 'साइन-इन हो रहा है...'
+                  : lang === 'pa'
+                  ? 'ਸੂਚੀ ਵਿੱਚ ਆਪਣੀ ਹਾਜ਼ਰੀ ਪਾਓ (Google Login)'
+                  : lang === 'en'
+                  ? 'Register Presence (Google Login)'
+                  : 'लाइव सूची में उपस्थिति दर्ज करें (Google)'}
+              </span>
+            </button>
+          </div>
         )}
 
         {/* End Session Button */}

@@ -3,6 +3,7 @@ import App from './App.tsx';
 import './index.css';
 import { LanguageProvider } from './context/LanguageContext';
 import { enforceProductionGuard } from './utils/productionGuard';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Global Google Maps quota failure listener per skill guidelines
 if (typeof window !== 'undefined') {
@@ -33,7 +34,9 @@ if (typeof window !== 'undefined' && 'caches' in window) {
 enforceProductionGuard();
 
 createRoot(document.getElementById('root')!).render(
-  <LanguageProvider>
-    <App />
-  </LanguageProvider>
+  <ErrorBoundary>
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>
+  </ErrorBoundary>
 );

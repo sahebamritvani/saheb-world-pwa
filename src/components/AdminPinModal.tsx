@@ -94,10 +94,6 @@ export const AdminPinModal: React.FC<AdminPinModalProps> = ({
             </button>
           </div>
         </form>
-
-        <p className="text-[10px] text-center text-amber-800/60">
-          डिफ਼ਾਲਟ ਮਾਸਟਰ ਪਿਨ (Master PIN): <span className="font-mono font-bold">7777</span>
-        </p>
       </div>
     </div>
   );

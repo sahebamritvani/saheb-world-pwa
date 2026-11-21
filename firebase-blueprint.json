@@ -2,38 +2,62 @@
   "entities": {
     "UserSadhanaProfile": {
       "title": "UserSadhanaProfile",
-      "description": "Devotee profile tracking multi-user sadhana minutes, streak, and badges",
+      "description": "Devotee profile tracking multi-user sadhana minutes, streak, and daily goal",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
         "displayName": { "type": "string", "maxLength": 100 },
-        "totalMinutes": { "type": "number" },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "sadhanaMinutes": { "type": "number" },
         "sadhanaStreak": { "type": "number" },
-        "lastActiveAt": { "type": "string", "maxLength": 64 }
+        "dailyGoalMinutes": { "type": "number" },
+        "lastActiveDate": { "type": "string", "maxLength": 32 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "displayName"]
+      "required": ["userId", "displayName", "sadhanaMinutes", "sadhanaStreak", "dailyGoalMinutes", "lastActiveDate"]
     },
     "LiveSumiranPresence": {
       "title": "LiveSumiranPresence",
       "description": "Active real-time souls meditating together in Live Global Sumiran",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "maxLength": 128 },
-        "displayName": { "type": "string", "maxLength": 100 },
-        "joinedAt": { "type": "string", "maxLength": 64 },
-        "isMeditating": { "type": "boolean" }
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 100 },
+        "userPhoto": { "type": "string", "maxLength": 500 },
+        "joinedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "isMeditating"]
+      "required": ["userId", "userName", "joinedAt"]
+    },
+    "GranthSlot": {
+      "title": "GranthSlot",
+      "description": "Admin-managed sacred scripture vault or Swadhyay step data slot",
+      "type": "object",
+      "properties": {
+        "slotId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetType": { "type": "string", "enum": ["swadhyay", "vault"] },
+        "vaultId": { "type": "number" },
+        "slotStatus": { "type": "string", "enum": ["EMPTY_SLOT", "LOADED"] },
+        "chapters": { "type": "array" },
+        "swadhyayPayload": { "type": "object" },
+        "updatedBy": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["slotId", "targetType", "slotStatus", "updatedBy", "updatedAt"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/UserSadhanaProfile" },
-      "description": "Private user sadhana profile document"
+      "description": "Owner-only devotee sadhana profile document"
     },
     "/live_sumiran/{presenceId}": {
       "schema": { "$ref": "#/entities/LiveSumiranPresence" },
       "description": "Live global sumiran active participants"
+    },
+    "/granth_slots/{slotId}": {
+      "schema": { "$ref": "#/entities/GranthSlot" },
+      "description": "Public-read, Admin-write sacred Granth & Swadhyay slots"
     }
   }
 }

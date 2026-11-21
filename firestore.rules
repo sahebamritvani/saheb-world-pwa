@@ -2,13 +2,25 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default deny catch-all
+    // Global Safety Net (Default deny catch-all)
     match /{document=**} {
       allow read, write: if false;
     }
 
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
     }
 
     function isOwner(userId) {
@@ -19,20 +31,141 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    // User Sadhana Profile
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'smongia76@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidUserProfileFields(data) {
+      return data.keys().hasAll([
+          'userId',
+          'displayName',
+          'sadhanaMinutes',
+          'sadhanaStreak',
+          'dailyGoalMinutes',
+          'lastActiveDate',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'userId',
+          'displayName',
+          'email',
+          'photoURL',
+          'sadhanaMinutes',
+          'sadhanaStreak',
+          'dailyGoalMinutes',
+          'lastActiveDate',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.userId is string && isValidId(data.userId) &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 160)) &&
+        (!('photoURL' in data) || data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 500)) &&
+        data.sadhanaMinutes is number && data.sadhanaMinutes >= 0 && data.sadhanaMinutes <= 14400 &&
+        data.sadhanaStreak is number && data.sadhanaStreak >= 0 && data.sadhanaStreak <= 50000 &&
+        data.dailyGoalMinutes is number && data.dailyGoalMinutes >= 1 && data.dailyGoalMinutes <= 1440 &&
+        data.lastActiveDate is string && data.lastActiveDate.size() >= 8 && data.lastActiveDate.size() <= 32 &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidLivePresence(data) {
+      return data.keys().hasAll(['userId', 'userName', 'joinedAt']) &&
+        data.keys().hasOnly(['userId', 'userName', 'userPhoto', 'joinedAt']) &&
+        data.userId is string && isValidId(data.userId) &&
+        data.userName is string && data.userName.size() >= 1 && data.userName.size() <= 100 &&
+        (!('userPhoto' in data) || data.userPhoto == null || (data.userPhoto is string && data.userPhoto.size() <= 500)) &&
+        data.joinedAt is timestamp;
+    }
+
+    function isValidGranthSlot(data, slotId) {
+      return data.keys().hasAll(['slotId', 'targetType', 'slotStatus', 'updatedBy', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'slotId',
+          'targetType',
+          'vaultId',
+          'slotStatus',
+          'chapters',
+          'swadhyayPayload',
+          'updatedBy',
+          'updatedAt'
+        ]) &&
+        data.slotId is string && data.slotId == slotId && isValidId(data.slotId) &&
+        data.targetType in ['swadhyay', 'vault'] &&
+        data.slotStatus in ['EMPTY_SLOT', 'LOADED'] &&
+        (!('vaultId' in data) || (data.vaultId is number && data.vaultId >= 1 && data.vaultId <= 20)) &&
+        (!('chapters' in data) || (data.chapters is list && data.chapters.size() <= 500 && (data.chapters.size() == 0 || data.chapters[0] is map))) &&
+        (!('swadhyayPayload' in data) || data.swadhyayPayload is map) &&
+        data.updatedBy is string && isValidId(data.updatedBy) &&
+        data.updatedAt is timestamp;
+    }
+
+    // User Sadhana Profile (Owner-only PII/progress isolation)
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(userId);
-      allow update: if isOwner(userId);
+      allow list: if false;
+      allow create: if isVerifiedUser() &&
+        isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfileFields(incoming()) &&
+        incoming().userId == userId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfileFields(incoming()) &&
+        incoming().userId == existing().userId &&
+        (!('createdAt' in existing()) || incoming().createdAt == existing().createdAt) &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName',
+          'photoURL',
+          'sadhanaMinutes',
+          'sadhanaStreak',
+          'dailyGoalMinutes',
+          'lastActiveDate',
+          'updatedAt'
+        ]);
       allow delete: if false;
     }
 
     // Live Sumiran Presence
     match /live_sumiran/{presenceId} {
-      allow list: if true;
-      allow get: if true;
-      allow create: if isSignedIn() && isValidId(presenceId) && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isValidId(presenceId);
+      allow list: if resource.data.userId is string;
+      allow create: if isVerifiedUser() &&
+        isValidId(presenceId) &&
+        isValidLivePresence(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().joinedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(presenceId) &&
+        existing().userId == request.auth.uid &&
+        isValidLivePresence(incoming()) &&
+        incoming().userId == existing().userId &&
+        incoming().joinedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['userName', 'userPhoto', 'joinedAt']);
+      allow delete: if isSignedIn() && isValidId(presenceId) && resource.data.userId == request.auth.uid;
+    }
+
+    // Admin-Managed Granth Slots (Public read, Verified Admin only write)
+    match /granth_slots/{slotId} {
+      allow get: if isValidId(slotId);
+      allow list: if resource.data.slotStatus in ['EMPTY_SLOT', 'LOADED'];
+      allow create: if isAdmin() &&
+        isValidId(slotId) &&
+        isValidGranthSlot(incoming(), slotId) &&
+        incoming().updatedBy == request.auth.uid &&
+        incoming().updatedAt == request.time;
+      allow update: if isAdmin() &&
+        isValidId(slotId) &&
+        isValidGranthSlot(incoming(), slotId) &&
+        incoming().updatedBy == request.auth.uid &&
+        incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(slotId);
     }
   }
 }
