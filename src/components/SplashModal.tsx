@@ -2,7 +2,6 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { useLanguage, Language } from '../context/LanguageContext';
 import { playGentleBell } from '../utils/audioSynth';
-import { startRosePetalVarsha } from '../utils/rosePetalCanvas';
 
 interface SplashModalProps {
   isOpen: boolean;
@@ -53,7 +52,6 @@ export const SplashModal: React.FC<SplashModalProps> = ({ isOpen, onClose }) => 
 
   const handleEnter = () => {
     playGentleBell(528);
-    startRosePetalVarsha(4000);
     onClose();
   };
 
