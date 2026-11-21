@@ -12,6 +12,7 @@ export interface SpiritualTrack {
   baseFreq: number;
   scale: number[];
   bhav: string;
+  category: 'vairagya' | 'prem' | 'sadhana';
 }
 
 const TRACKS: SpiritualTrack[] = [
@@ -22,9 +23,10 @@ const TRACKS: SpiritualTrack[] = [
     titleEn: "Jhini Jhini Beeni Chadariya",
     raag: "राग भैरवी (Bhairavi)",
     durationSec: 180,
-    baseFreq: 220, // A3
+    baseFreq: 220,
     scale: [1, 1.125, 1.2, 1.333, 1.5, 1.6, 1.875, 2],
-    bhav: "आत्मा और शरीर का पवित्र ताना-बाना"
+    bhav: "आत्मा और शरीर का पवित्र ताना-बाना",
+    category: 'vairagya'
   },
   {
     id: 2,
@@ -33,9 +35,10 @@ const TRACKS: SpiritualTrack[] = [
     titleEn: "Ghat Ghat Mein Panchhi Bolta",
     raag: "राग यमन (Yaman)",
     durationSec: 210,
-    baseFreq: 246.94, // B3
+    baseFreq: 246.94,
     scale: [1, 1.125, 1.25, 1.4, 1.5, 1.667, 1.875, 2],
-    bhav: "समस्त घटों में परमात्मा की अद्वैत उपस्थिति"
+    bhav: "समस्त घटों में परमात्मा की अद्वैत उपस्थिति",
+    category: 'prem'
   },
   {
     id: 3,
@@ -44,9 +47,10 @@ const TRACKS: SpiritualTrack[] = [
     titleEn: "Mann Lago Mero Yaar Fakiri Mein",
     raag: "राग काफी (Kafi)",
     durationSec: 195,
-    baseFreq: 196, // G3
+    baseFreq: 196,
     scale: [1, 1.125, 1.2, 1.333, 1.5, 1.667, 1.777, 2],
-    bhav: "सच्चा वैराग्य एवं सद्गुरु की सहज प्रीत"
+    bhav: "सच्चा वैराग्य एवं सद्गुरु की सहज प्रीत",
+    category: 'vairagya'
   },
   {
     id: 4,
@@ -55,9 +59,10 @@ const TRACKS: SpiritualTrack[] = [
     titleEn: "Sadho Sahaj Samadhi Bhali",
     raag: "राग देश (Desh)",
     durationSec: 240,
-    baseFreq: 261.63, // C4
+    baseFreq: 261.63,
     scale: [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2],
-    bhav: "उठते-बैठते निरंतर प्रभु स्मरण की अवस्था"
+    bhav: "उठते-बैठते निरंतर प्रभु स्मरण की अवस्था",
+    category: 'sadhana'
   },
   {
     id: 5,
@@ -66,9 +71,34 @@ const TRACKS: SpiritualTrack[] = [
     titleEn: "Anahad Naad Sacred Drone (432 Hz)",
     raag: "नाद समाधि (Universal OM)",
     durationSec: 300,
-    baseFreq: 216, // 432 / 2
+    baseFreq: 216,
     scale: [1, 1.25, 1.5, 1.75, 2],
-    bhav: "दशम द्वार में गूंजती अखंड ब्रह्म ध्वनि"
+    bhav: "दशम द्वार में गूंजती अखंड ब्रह्म ध्वनि",
+    category: 'sadhana'
+  },
+  {
+    id: 6,
+    titleHi: "🌹 सत्यनाम सुमिरन पावन धुन",
+    titlePa: "🌹 ਸਤਯਨਾਮ ਸਿਮਰਨ ਪਾਵਨ ਧੁਨ",
+    titleEn: "🌹 Satyanaam Simran Sacred Chant",
+    raag: "सत्यनाम साधना (Deep Contemplation)",
+    durationSec: 360,
+    baseFreq: 216,
+    scale: [1, 1.25, 1.5, 1.875, 2],
+    bhav: "घट के भीतर सत्यनाम का अखंड शांत स्पंदन",
+    category: 'sadhana'
+  },
+  {
+    id: 7,
+    titleHi: "🔔 प्रातः व संध्या आरती मंगलाचरण",
+    titlePa: "🔔 ਪ੍ਰਾਤਹ ਤੇ ਸੰਧਿਆ ਆਰਤੀ ਮੰਗਲਾਚਰਣ",
+    titleEn: "🔔 Morning & Evening Aarti Mangalacharan",
+    raag: "मंगलाचरण (Sacred Aarti Chime)",
+    durationSec: 300,
+    baseFreq: 261.63,
+    scale: [1, 1.125, 1.25, 1.5, 1.667, 2],
+    bhav: "सतगुरु कबीर साहेब की पावन आरती व मंगल कामना",
+    category: 'sadhana'
   }
 ];
 
@@ -79,8 +109,13 @@ export const SpiritualAudioPlayer: React.FC<{ onTimeTracked?: (seconds: number) 
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [volume, setVolume] = useState<number>(0.75);
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<'all' | 'vairagya' | 'prem' | 'sadhana'>('all');
 
-  const track = TRACKS[currentTrackIdx];
+  const filteredTracks = activeCategory === 'all' 
+    ? TRACKS 
+    : TRACKS.filter(t => t.category === activeCategory);
+
+  const track = filteredTracks[currentTrackIdx] || filteredTracks[0];
 
   // Web Audio Context refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -233,20 +268,20 @@ export const SpiritualAudioPlayer: React.FC<{ onTimeTracked?: (seconds: number) 
   };
 
   const handleNext = () => {
-    const nextIdx = (currentTrackIdx + 1) % TRACKS.length;
+    const nextIdx = (currentTrackIdx + 1) % filteredTracks.length;
     setCurrentTrackIdx(nextIdx);
     setCurrentTimeSec(0);
     if (isPlaying) {
-      startSynth(TRACKS[nextIdx]);
+      startSynth(filteredTracks[nextIdx]);
     }
   };
 
   const handlePrev = () => {
-    const prevIdx = (currentTrackIdx - 1 + TRACKS.length) % TRACKS.length;
+    const prevIdx = (currentTrackIdx - 1 + filteredTracks.length) % filteredTracks.length;
     setCurrentTrackIdx(prevIdx);
     setCurrentTimeSec(0);
     if (isPlaying) {
-      startSynth(TRACKS[prevIdx]);
+      startSynth(filteredTracks[prevIdx]);
     }
   };
 
@@ -287,6 +322,30 @@ export const SpiritualAudioPlayer: React.FC<{ onTimeTracked?: (seconds: number) 
         <span className="px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-[10px] font-black text-[#8B0000]">
           {playbackSpeed}x {lang === 'pa' ? 'ਗਤੀ' : lang === 'en' ? 'Speed' : 'गति'}
         </span>
+      </div>
+
+      {/* Category Filter Pills */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        {[
+          { id: 'all', label: lang === 'pa' ? 'ਸਭ' : lang === 'en' ? 'All' : 'सभी' },
+          { id: 'vairagya', label: lang === 'pa' ? 'ਵੈਰਾਗ' : lang === 'en' ? 'Renunciation' : 'वैराग्य' },
+          { id: 'prem', label: lang === 'pa' ? 'ਪ੍ਰੇਮ' : lang === 'en' ? 'Love' : 'प्रेम' },
+          { id: 'sadhana', label: lang === 'pa' ? 'ਸਾਧਨਾ' : lang === 'en' ? 'Practice' : 'साधना' }
+        ].map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => {
+              setActiveCategory(cat.id as any);
+              setCurrentTrackIdx(0);
+              setCurrentTimeSec(0);
+              stopSynth();
+              setIsPlaying(false);
+            }}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold border transition ${activeCategory === cat.id ? 'bg-[#8B0000] text-white border-[#8B0000]' : 'bg-white text-amber-900 border-amber-200'}`}
+          >
+            {cat.label}
+          </button>
+        ))}
       </div>
 
       {/* Current Track Info */}

@@ -45,7 +45,7 @@
   --reader-text: #E0E0E0;
 }
 
-/* High-Contrast OLED True Black Theme (Specifically for low-light night reading) */
+/* High-Contrast OLED True Black Theme (सत्य श्याम OLED) */
 .theme-trueblack {
   --app-bg: #000000;
   --app-text: #F5E6BE;
@@ -72,43 +72,273 @@ body {
   border: 1px solid var(--card-border);
 }
 
-.theme-trueblack .card {
-  background-color: #080808;
-  border: 1px solid #332211;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.98);
+/* ==========================================================================
+   Comprehensive Deep Theme Contrast Overrides (OLED & Night Modes)
+   ========================================================================== */
+
+/* --- THEME TRUEBLACK (सत्य श्याम OLED) --- */
+.theme-trueblack {
+  background-color: #000000 !important;
   color: #F5E6BE !important;
 }
 
-.theme-trueblack .card h3,
-.theme-trueblack .card h4,
-.theme-trueblack .card h5,
-.theme-trueblack .card p,
-.theme-trueblack .card span,
-.theme-trueblack .card div {
+.theme-trueblack .card,
+.theme-trueblack div[class*="bg-white"],
+.theme-trueblack div[class*="bg-amber-50"],
+.theme-trueblack div[class*="bg-amber-100"],
+.theme-trueblack div[class*="bg-[#FFFDF9]"],
+.theme-trueblack div[class*="bg-[#FFF8EE]"],
+.theme-trueblack div[class*="bg-[#F4ECD8]"],
+.theme-trueblack section[class*="bg-white"],
+.theme-trueblack section[class*="bg-amber-50"] {
+  background-color: #0B0B0B !important;
+  border-color: #3B2A10 !important;
+  color: #F5E6BE !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.95) !important;
+}
+
+.theme-trueblack p,
+.theme-trueblack h1,
+.theme-trueblack h2,
+.theme-trueblack h3,
+.theme-trueblack h4,
+.theme-trueblack h5,
+.theme-trueblack h6,
+.theme-trueblack span,
+.theme-trueblack strong,
+.theme-trueblack div {
   color: #F5E6BE;
 }
 
-.theme-trueblack .card .text-gray-900,
-.theme-trueblack .card .text-gray-800,
-.theme-trueblack .card .text-gray-700,
-.theme-trueblack .card .text-amber-950,
-.theme-trueblack .card .text-amber-900 {
+.theme-trueblack .text-amber-950,
+.theme-trueblack .text-amber-900,
+.theme-trueblack .text-amber-950,
+.theme-trueblack .text-amber-900,
+.theme-trueblack .text-amber-800,
+.theme-trueblack .text-amber-700,
+.theme-trueblack [class*="text-\\[\\#8B0000\\]"],
+.theme-trueblack [class*="text-\\[\\#701A07\\]"],
+.theme-trueblack .text-gray-900,
+.theme-trueblack .text-gray-800,
+.theme-trueblack .text-gray-700,
+.theme-trueblack .text-slate-900,
+.theme-trueblack .text-slate-800 {
+  color: #FFEA70 !important;
+}
+
+.theme-trueblack .text-gray-600,
+.theme-trueblack .text-gray-500,
+.theme-trueblack .text-amber-600,
+.theme-trueblack [class*="text-\\[\\#5C4033\\]"] {
+  color: #E5C158 !important;
+}
+
+.theme-trueblack button[class*="bg-white"],
+.theme-trueblack button[class*="bg-amber-50"],
+.theme-trueblack button[class*="bg-amber-100"] {
+  background-color: #181818 !important;
+  border-color: #443311 !important;
+  color: #FFEA70 !important;
+}
+
+.theme-trueblack input,
+.theme-trueblack textarea,
+.theme-trueblack select {
+  background-color: #121212 !important;
+  color: #FFEA70 !important;
+  border-color: #554411 !important;
+}
+
+.theme-trueblack ::placeholder {
+  color: #E5C158 !important;
+  opacity: 0.95;
+}
+
+/* Badge High-Contrast Overrides */
+.theme-trueblack .bg-emerald-100 {
+  background-color: #044432 !important;
+  color: #6EE7B7 !important;
+  border: 1px solid #10B981 !important;
+}
+
+.theme-night .bg-emerald-100 {
+  background-color: #064E3B !important;
+  color: #A7F3D0 !important;
+  border: 1px solid #34D399 !important;
+}
+
+.theme-trueblack .bg-amber-100\/80,
+.theme-trueblack .bg-amber-100 {
+  background-color: #24180A !important;
+  color: #FFEA70 !important;
+  border-color: #553311 !important;
+}
+
+.theme-night .bg-amber-100\/80,
+.theme-night .bg-amber-100 {
+  background-color: #2A2A2A !important;
+  color: #FFD700 !important;
+  border-color: #444444 !important;
+}
+
+/* --- THEME NIGHT (रात्रि Mode) --- */
+.theme-night {
+  background-color: #121212 !important;
+  color: #F5F5F5 !important;
+}
+
+.theme-night .card,
+.theme-night div[class*="bg-white"],
+.theme-night div[class*="bg-amber-50"],
+.theme-night div[class*="bg-amber-100"],
+.theme-night div[class*="bg-[#FFFDF9]"],
+.theme-night div[class*="bg-[#FFF8EE]"],
+.theme-night div[class*="bg-[#F4ECD8]"],
+.theme-night section[class*="bg-white"],
+.theme-night section[class*="bg-amber-50"] {
+  background-color: #1E1E1E !important;
+  border-color: #3A3A3A !important;
+  color: #E2E2E2 !important;
+}
+
+.theme-night p,
+.theme-night h1,
+.theme-night h2,
+.theme-night h3,
+.theme-night h4,
+.theme-night h5,
+.theme-night h6,
+.theme-night span,
+.theme-night strong,
+.theme-night div {
+  color: #E2E2E2;
+}
+
+.theme-night .text-amber-950,
+.theme-night .text-amber-900,
+.theme-night .text-amber-800,
+.theme-night .text-amber-700,
+.theme-night [class*="text-\\[\\#8B0000\\]"],
+.theme-night [class*="text-\\[\\#701A07\\]"],
+.theme-night .text-gray-900,
+.theme-night .text-gray-800,
+.theme-night .text-gray-700,
+.theme-night .text-slate-900,
+.theme-night .text-slate-800 {
+  color: #FFE680 !important;
+}
+
+.theme-night .text-gray-600,
+.theme-night .text-gray-500,
+.theme-night .text-amber-600,
+.theme-night [class*="text-\\[\\#5C4033\\]"] {
+  color: #D1D5DB !important;
+}
+
+.theme-night button[class*="bg-white"],
+.theme-night button[class*="bg-amber-50"],
+.theme-night button[class*="bg-amber-100"] {
+  background-color: #282828 !important;
+  border-color: #444444 !important;
+  color: #FFE680 !important;
+}
+
+/* High Contrast Language Switcher Buttons (Active & Inactive) Across All Themes */
+.lang-btn-active {
+  background-color: #8B0000 !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid #FFD700 !important;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.4) !important;
+  font-weight: 800 !important;
+}
+
+.lang-btn-inactive {
+  background-color: #FFFFFF !important;
+  color: #5C4033 !important;
+  border: 1px solid #D2B48C !important;
+  font-weight: 700 !important;
+}
+.lang-btn-inactive:hover {
+  background-color: #FFF8EE !important;
+  color: #8B0000 !important;
+}
+
+/* Night Mode (.theme-night) High-Contrast Overrides */
+.theme-night .lang-btn-active {
+  background-color: #FFD700 !important;
+  color: #0A0A0A !important;
+  border: 1.5px solid #FFE566 !important;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.7) !important;
+  font-weight: 900 !important;
+}
+
+.theme-night .lang-btn-inactive {
+  background-color: #282828 !important;
+  color: #E2E2E2 !important;
+  border: 1px solid #555555 !important;
+}
+.theme-night .lang-btn-inactive:hover {
+  background-color: #383838 !important;
   color: #FFD700 !important;
 }
 
-/* Granthalaya Vault Reader trueblack high-contrast override */
-.theme-trueblack .granth-reader-content p,
-.theme-trueblack .granth-reader-content div,
-.theme-trueblack .granth-reader-content span,
-.theme-trueblack .granth-reader-content h5 {
-  color: #F5E6BE !important;
-  font-weight: 700 !important;
+/* True Black OLED Mode (.theme-trueblack) High-Contrast Overrides */
+.theme-trueblack .lang-btn-active {
+  background-color: #FFEA70 !important;
+  color: #000000 !important;
+  border: 1.5px solid #FFF5A8 !important;
+  box-shadow: 0 0 16px rgba(255, 234, 112, 0.8) !important;
+  font-weight: 900 !important;
 }
 
-.theme-trueblack .btn-primary { background-color: #F5C518; color: #000000; font-weight: bold; }
-.theme-trueblack .header-text { color: #FFD700; text-shadow: 0 0 12px rgba(255, 215, 0, 0.3); }
-.theme-trueblack .sub-text { color: #D4AF37; }
-.theme-trueblack input, .theme-trueblack textarea { background-color: #111111; color: #F5E6BE; border-color: #333333; }
+.theme-trueblack .lang-btn-inactive {
+  background-color: #141414 !important;
+  color: #D4AF37 !important;
+  border: 1px solid #443311 !important;
+}
+.theme-trueblack .lang-btn-inactive:hover {
+  background-color: #22180A !important;
+  color: #FFEA70 !important;
+}
+
+.theme-night input,
+.theme-night textarea,
+.theme-night select {
+  background-color: #262626 !important;
+  color: #FFFFFF !important;
+  border-color: #444444 !important;
+}
+
+.theme-night ::placeholder {
+  color: #D1D5DB !important;
+  opacity: 0.9;
+}
+
+/* Dynamic Reader & App Font Scaling Engine */
+.font-scale-sm {
+  font-size: 0.8875rem !important;
+}
+.font-scale-sm p, .font-scale-sm span, .font-scale-sm li {
+  font-size: 0.9em !important;
+}
+
+.font-scale-md {
+  font-size: 1rem !important;
+}
+
+.font-scale-lg {
+  font-size: 1.2rem !important;
+}
+.font-scale-lg p, .font-scale-lg span, .font-scale-lg li {
+  font-size: 1.22em !important;
+}
+
+.font-scale-xl {
+  font-size: 1.4rem !important;
+}
+.font-scale-xl p, .font-scale-xl span, .font-scale-xl li {
+  font-size: 1.42em !important;
+}
 
 /* Granth Vault Card Spring-Based Hover Animation */
 .vault-card-hover {
@@ -186,4 +416,15 @@ body {
     box-shadow: none;
     border: 4px double #8B0000;
   }
+}
+
+/* Petal Fall Animation for Live Meditation */
+@keyframes fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+.animate-fall {
+  animation: fall linear infinite;
 }

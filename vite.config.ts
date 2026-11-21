@@ -45,7 +45,7 @@ export default defineConfig(() => {
         },
         manifestFilename: 'manifest.json',
         devOptions: {
-          enabled: false,
+          enabled: true,
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,mp3,json,webp,woff2}'],

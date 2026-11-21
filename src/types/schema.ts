@@ -11,9 +11,16 @@ export interface QuizOptionSlot {
   explanation: string;
 }
 
+export interface QuizQuestionSlot {
+  id?: number;
+  question: string;
+  options: QuizOptionSlot[];
+}
+
 export interface QuizSlot {
   question: string;
   options: QuizOptionSlot[];
+  questions?: QuizQuestionSlot[];
 }
 
 export interface SwadhyayStepSlot {
@@ -21,11 +28,14 @@ export interface SwadhyayStepSlot {
   context: string;
   // Step 2: मूल पाठ एवं स्वर-तरंग
   original_text: string;
+  original_text_pa?: string;
   transliteration?: string;
   // Step 3: शब्दार्थ कपाट
   vocabulary: VocabularySlot[];
   // Step 4: अंतःकरण सत्संग
   deep_bhavarth: string;
+  deep_bhavarth_pa?: string;
+  deep_bhavarth_en?: string;
   // Step 5: प्रज्ञा प्रश्नोत्तरी
   mcq_quiz: QuizSlot;
   // Step 6: घट के भीतर का रहस्य

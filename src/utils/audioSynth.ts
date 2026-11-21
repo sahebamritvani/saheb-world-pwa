@@ -95,6 +95,37 @@ export function startTanpuraDrone(): boolean {
   }
 }
 
+export function playSatyanaamDhun() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    
+    // Frequencies for "Sat-ya-naam" meditative tones (approximate)
+    const notes = [432, 528, 639, 432];
+    const duration = 0.8;
+    
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * duration);
+      
+      gain.gain.setValueAtTime(0, now + i * duration);
+      gain.gain.linearRampToValueAtTime(0.2, now + i * duration + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + (i + 1) * duration);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(now + i * duration);
+      osc.stop(now + (i + 1) * duration);
+    });
+  } catch (e) {
+    console.warn('Dhun play failed', e);
+  }
+}
+
 export function stopTanpuraDrone() {
   try {
     if (droneGain && audioCtx) {

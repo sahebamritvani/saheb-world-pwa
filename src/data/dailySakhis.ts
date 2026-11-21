@@ -25,6 +25,18 @@ export interface DailyAffirmationItem {
 
 export const DAILY_SAKHIS: KabirSakhiItem[] = [
   {
+    id: 0,
+    topicHi: "ऋतु बसंत व त्याग",
+    topicPa: "ਰਿਤੁ ਬਸੰਤ ਅਤੇ ਤਿਆਗ",
+    topicEn: "Season of Spring & Renunciation",
+    coupletHi: "रितु बसंत याचक भया, हरखि दिया द्रुम पात।\nताते नव पल्लव भया, दिया दूर नहिं जात।।",
+    coupletPa: "ਰਿਤੁ ਬਸੰਤ ਜਾਚਕ ਭਇਆ, ਹਰਖਿ ਦੀਆ ਦ੍ਰੁਮ ਪਾਤ।\nਤਾਤੇ ਨਵ ਪੱਲਵ ਭਇਆ, ਦੀਆ ਦੂਰ ਨਹੀਂ ਜਾਤ।।",
+    coupletEn: "When spring arrives, trees joyfully shed old leaves, giving birth to fresh green tender shoots.",
+    bhavarthHi: "यहाँ बसंत ऋतु सद्गुरु की कृपा का प्रतीक है। वृक्ष प्रसन्न होकर पुराने पत्ते त्याग देता है, जिससे नए कोमल पल्लव खिलते हैं।",
+    bhavarthPa: "ਇੱਥੇ ਬਸੰਤ ਰੁੱਤ ਸਤਿਗੁਰੂ ਦੀ ਕਿਰਪਾ ਦਾ ਪ੍ਰతీਕ ਹੈ। ਰੁੱਖ ਪੁਰਾਣੇ ਪੱਤੇ ਤਿਆਗ ਕੇ ਨਵੇਂ ਪੱਤੇ ਖਿੜਾਉਂਦਾ ਹੈ।",
+    bhavarthEn: "Trees joyfully shed old leaves in spring to sprout fresh tender shoots, symbolizing spiritual renewal."
+  },
+  {
     id: 1,
     topicHi: "सद्गुरु की महिमा",
     topicPa: "ਸਤਿਗੁਰੂ ਦੀ ਮਹਿਮਾ",

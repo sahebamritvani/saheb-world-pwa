@@ -42,7 +42,15 @@ import {
   TrendingUp,
   BarChart2,
   CheckCheck,
-  Sliders
+  Sliders,
+  Bell,
+  Heart,
+  Award,
+  Book,
+  Bot,
+  Map as MapIcon,
+  Calendar as CalendarIcon,
+  Sparkles as SparkleIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -64,6 +72,7 @@ import { useLanguage, Language } from './context/LanguageContext';
 import { playGentleBell, startTanpuraDrone, stopTanpuraDrone, setTanpuraVolume } from './utils/audioSynth';
 import { startRosePetalVarsha } from './utils/rosePetalCanvas';
 import { generateAndDownloadCertificate } from './utils/certificateGenerator';
+import { generateAndDownloadSakhiCard } from './utils/sakhiCardGenerator';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { getDailySakhi, getDailyAffirmation, getDailyHukamnama, KabirSakhiItem, DailyAffirmationItem, DailyHukamnamaItem, DAILY_SAKHIS, DAILY_HUKAMNAMAS } from './data/dailySakhis';
 import {
@@ -79,9 +88,46 @@ import { QuoteCardModal } from './components/QuoteCardModal';
 import { SplashModal } from './components/SplashModal';
 import { OfflineBanner } from './components/OfflineBanner';
 import { AdminPinModal } from './components/AdminPinModal';
+import { SacredReaderModal } from './components/SacredReaderModal';
+import { SadhanaAlarmModal } from './components/SadhanaAlarmModal';
+import { DailyResolutionModal } from './components/DailyResolutionModal';
+import { SadhanaReportCardModal } from './components/SadhanaReportCardModal';
+import { YugaErasModal } from './components/YugaErasModal';
+import { DailyWisdomWidget } from './components/DailyWisdomWidget';
+import { VisualMala } from './components/VisualMala';
+import { PilgrimageMapModal } from './components/PilgrimageMapModal';
+import { KabirGlossaryModal } from './components/KabirGlossaryModal';
+import { SadhanaCalendar } from './components/SadhanaCalendar';
+import { WisdomChatModal } from './components/WisdomChatModal';
+import { LiveMeditationOverlay } from './components/LiveMeditationOverlay';
+import { UserProfileModal } from './components/UserProfileModal';
+import { Trophy, User as UserIcon, Cloud } from 'lucide-react';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from './utils/firebase';
 
 export default function App() {
   const { lang, setLang, t } = useLanguage();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+  const [showSacredReaderModal, setShowSacredReaderModal] = useState(false);
+  const [showAlarmModal, setShowAlarmModal] = useState(false);
+  const [showResolutionModal, setShowResolutionModal] = useState(false);
+  const [showReportCardModal, setShowReportCardModal] = useState(false);
+  const [showYugaModal, setShowYugaModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [showGlossaryModal, setShowGlossaryModal] = useState(false);
+  const [showWisdomChatModal, setShowWisdomChatModal] = useState(false);
+  const [wisdomChatContext, setWisdomChatContext] = useState<string | undefined>(undefined);
+  const [isLiveMeditation, setIsLiveMeditation] = useState(false);
+  const [hasGmpQuotaExceeded, setHasGmpQuotaExceeded] = useState(false);
+
+  useEffect(() => {
+    const onQuota = () => setHasGmpQuotaExceeded(true);
+    window.addEventListener('gmp-quota-exceeded', onQuota);
+    return () => window.removeEventListener('gmp-quota-exceeded', onQuota);
+  }, []);
 
   // Navigation & View State
   const [showSplash, setShowSplash] = useState(true);
@@ -117,7 +163,8 @@ export default function App() {
   // Themes & UI Preferences (White, Pothi, Night, and True Black OLED)
   const [currentTheme, setCurrentTheme] = useState<'white' | 'pothi' | 'night' | 'trueblack'>('pothi');
   const [searchQuery, setSearchQuery] = useState('');
-  const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>('md');
+  const [searchFilter, setSearchFilter] = useState<'all' | 'sadhan' | 'granth' | 'swadhyay' | 'system'>('all');
+  const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
   const [lineGuideActive, setLineGuideActive] = useState(false);
   const [readerFontScale, setReaderFontScale] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [readerLineHeight, setReaderLineHeight] = useState<'normal' | 'relaxed' | 'loose'>('relaxed');
@@ -125,6 +172,7 @@ export default function App() {
   // Swadhyay 11-Step Engine States
   const [currentStep, setCurrentStep] = useState(1);
   const [quizAnswerSelected, setQuizAnswerSelected] = useState<number | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizScore, setQuizScore] = useState(0);
   const [japaCount, setJapaCount] = useState(0);
   const [userJournal, setUserJournal] = useState(() => localStorage.getItem('saheb_swadhyay_journal') || '');
@@ -232,6 +280,9 @@ export default function App() {
   });
   const [showQuoteCardModal, setShowQuoteCardModal] = useState(false);
   const [quoteCardData, setQuoteCardData] = useState<{ title: string; text: string; essence: string } | null>(null);
+  const [showSakhiImageModal, setShowSakhiImageModal] = useState(false);
+  const [sakhiModalImageUrl, setSakhiModalImageUrl] = useState<string | null>(null);
+  const [sakhiModalFormatName, setSakhiModalFormatName] = useState<string>('पर्चमेंट कार्ड (F-1)');
 
   const handleMalaTap = () => {
     if (navigator.vibrate) navigator.vibrate(45);
@@ -243,6 +294,7 @@ export default function App() {
       localStorage.setItem('saheb_mala_rounds', String(nextRounds));
       setMalaCount(0);
       localStorage.setItem('saheb_mala_count', '0');
+      import('./utils/audioSynth').then(m => m.playSatyanaamDhun());
       playGentleBell(528);
       startRosePetalVarsha(7000);
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
@@ -253,16 +305,54 @@ export default function App() {
     }
   };
 
-  const speakText = (text: string) => {
+  const [isGeminiVoiceActive, setIsGeminiVoiceActive] = useState(false);
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const speakText = async (text: string) => {
+    // Stop any active recitation
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+    }
+
+    showToast(lang === 'pa' ? 'ਗੁਰਮੁਖੀ ਆਵਾਜ਼ ਤਿਆਰ ਹੋ ਰਹੀ ਹੈ... 🎙️' : lang === 'en' ? 'Synthesizing Devotional Voice... 🎙️' : 'दिव्य वाणी स्वर तैयार हो रहा है... 🎙️');
+    setIsGeminiVoiceActive(true);
+
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice: 'Kore' }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.audioBase64) {
+          const audio = new Audio(`data:audio/wav;base64,${data.audioBase64}`);
+          activeAudioRef.current = audio;
+          audio.onended = () => setIsGeminiVoiceActive(false);
+          audio.onerror = () => setIsGeminiVoiceActive(false);
+          await audio.play();
+          showToast(lang === 'pa' ? 'ਸਾਹਿਬ ਦਿਵਯ ਵਾਚਨ ਆਰੰਭ... ✨' : lang === 'en' ? 'Devotional Voice Recitation active ✨' : 'सद्गुरु दिव्य वाणी वाचन सक्रिय ✨');
+          return;
+        }
+      }
+    } catch {
+      // Fallback seamlessly to native browser speech synthesis
+    }
+
+    setIsGeminiVoiceActive(false);
+    if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang === 'pa' ? 'pa-IN' : lang === 'en' ? 'en-US' : 'hi-IN';
-      utterance.rate = 0.9;
+      utterance.rate = (window as any).sahebTTSSpeed || 0.88;
       window.speechSynthesis.speak(utterance);
       showToast(lang === 'pa' ? 'ਆਡੀਓ ਵਾਚਨ ਆਰੰਭ... 🔊' : lang === 'en' ? 'Audio recitation started... 🔊' : 'पावन वाचन प्रारंभ... 🔊');
     } else {
-      showToast('Speech synthesis not supported');
+      showToast('Audio playback not supported');
     }
   };
 
@@ -369,6 +459,75 @@ export default function App() {
     const today = new Date().toISOString().slice(0, 10);
     return localStorage.getItem('saheb_sadhana_celebrated_date') === today;
   });
+
+  // Firebase Auth State Listener & Multi-Device Cloud Sync
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (typeof data.sadhanaStreak === 'number' && data.sadhanaStreak > 0) {
+              setSadhanaStreak(prev => Math.max(prev, data.sadhanaStreak));
+            }
+            if (typeof data.dailyGoalMinutes === 'number' && data.dailyGoalMinutes > 0) {
+              setDailyGoalMinutes(data.dailyGoalMinutes);
+            }
+            const today = new Date().toISOString().slice(0, 10);
+            if (data.lastActiveDate === today && typeof data.sadhanaMinutes === 'number') {
+              setTodaySadhanaMinutes(prev => Math.max(prev, data.sadhanaMinutes));
+            }
+          } else {
+            await setDoc(userDocRef, {
+              userId: user.uid,
+              displayName: user.displayName || 'साधक हंस',
+              email: user.email || '',
+              photoURL: user.photoURL || null,
+              sadhanaMinutes: todaySadhanaMinutes,
+              sadhanaStreak: sadhanaStreak,
+              dailyGoalMinutes: dailyGoalMinutes,
+              lastActiveDate: new Date().toISOString().slice(0, 10),
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            });
+          }
+        } catch (err) {
+          console.warn("Firebase user sync notice:", err);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleForceCloudSync = async () => {
+    if (!currentUser) {
+      setShowProfileModal(true);
+      return;
+    }
+    setIsCloudSyncing(true);
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid), {
+        userId: currentUser.uid,
+        displayName: currentUser.displayName || 'साधक हंस',
+        email: currentUser.email || '',
+        photoURL: currentUser.photoURL || null,
+        sadhanaMinutes: todaySadhanaMinutes,
+        sadhanaStreak: sadhanaStreak,
+        dailyGoalMinutes: dailyGoalMinutes,
+        lastActiveDate: new Date().toISOString().slice(0, 10),
+        updatedAt: Date.now()
+      }, { merge: true });
+      showToast(lang === 'pa' ? 'ਸਾਧਨਾ ਕਲਾਊਡ ਤੇ ਸੁਰੱਖਿਅਤ ਹੋਈ! 🙏' : lang === 'en' ? 'Sadhana synced to Cloud! 🙏' : 'सद्गुरु कृपा! साधना क्लाउड पर सुरक्षित हो गई। 🙏');
+    } catch (err) {
+      console.warn("Cloud sync error:", err);
+      showToast('क्लाउड समन्वय त्रुटि: कृपया इंटरनेट कनेक्शन जांचें');
+    } finally {
+      setIsCloudSyncing(false);
+    }
+  };
 
   // Vault Reading Progress State (tracks read chapters array per vault ID)
   const [vaultReadChapters, setVaultReadChapters] = useState<Record<number, number[]>>(() => {
@@ -591,10 +750,11 @@ export default function App() {
 
   // Social Share using Web Share API
   const handleSocialShare = async () => {
+    const cleanUrl = window.location.href.split('?')[0];
     const shareData = {
       title: 'Saheb World — कबीर साहेब पावन ज्ञान पीठ',
       text: '🌹 कबीर साहेब के पावन वचनों, ११-चरणीय स्वाध्याय, अनहद नाद और अमर साखियों का अनुभव करें। साहेब बंदगी साहेब!',
-      url: window.location.href
+      url: cleanUrl
     };
     try {
       if (navigator.share) {
@@ -662,6 +822,15 @@ export default function App() {
     localStorage.setItem('saheb_sadhana_today_minutes', String(newMinutes));
     localStorage.setItem('saheb_sadhana_last_date', today);
 
+    // Auto-sync to Firebase if signed in
+    if (currentUser) {
+      setDoc(doc(db, 'users', currentUser.uid), {
+        sadhanaMinutes: newMinutes,
+        lastActiveDate: today,
+        updatedAt: Date.now()
+      }, { merge: true }).catch(() => {});
+    }
+
     // Goal reached check
     if (newMinutes >= dailyGoalMinutes && (!sadhanaGoalCelebrated || todaySadhanaMinutes < dailyGoalMinutes)) {
       confetti({
@@ -686,6 +855,14 @@ export default function App() {
         setSadhanaStreak(nextStreak);
         localStorage.setItem('saheb_sadhana_streak', String(nextStreak));
         localStorage.setItem('saheb_sadhana_streak_date', today);
+
+        if (currentUser) {
+          setDoc(doc(db, 'users', currentUser.uid), {
+            sadhanaStreak: nextStreak,
+            lastActiveDate: today,
+            updatedAt: Date.now()
+          }, { merge: true }).catch(() => {});
+        }
       }
       showToast(lang === 'pa' ? 'ਅੱਜ ਦਾ ਪਾਵਨ ਸਾਧਨਾ ਟੀਚਾ ਪੂਰਾ ਹੋਇਆ! ਸਾਹਿਬ ਬੰਦਗੀ! 🙏' : lang === 'en' ? 'Daily Sadhana Goal Achieved! Saheb Bandagi! 🙏' : 'आज का पावन साधना लक्ष्य संपन्न! साहेब बंदगी साहेब! 🙏');
     } else {
@@ -794,7 +971,7 @@ export default function App() {
         1: { title: "ਨਿਤਨੇਮ ਗੁਟਕਾ ਸਾਹਿਬ", subtitle: "ਸਵੇਰ ਅਤੇ ਸੰਝ ਸਿਮਰਨ, ਆਰਤੀ ਅਤੇ ਮੰਗਲਾਚਰਨ", category: "ਨਿਤਨੇਮ ਸਾਧਨਾ" },
         2: { title: "ਕਬੀਰ ਬੀਜਕ ਗ੍ਰੰਥ", subtitle: "ਰਮੈਣੀ, ਸ਼ਬਦ ਅਤੇ ਸਾਖੀ — ਸੱਚ ਦਾ ਪਾਵਨ ਖ਼ਜ਼ਾਨਾ", category: "ਪਰਮ ਗ੍ਰੰਥ" },
         3: { title: "ਕਬੀਰ ਸਾਗਰ", subtitle: "ਅਨੁਰਾਗ ਸਾਗਰ, ਅਮਰ ਮੂਲ, ਬ੍ਰਹਮ ਬੋਧ ਅਤੇ ਸੁਖਨਿਧਾਨ", category: "ਰਹੱਸ ਗ੍ਰੰਥ" },
-        4: { title: "ਸਾਖੀ ਸੰਗ੍ਰਹਿ (11-Steps)", subtitle: "੧੧-ਚਰਣੀ ਸਵਾਧਿਆਇ ਸਟੈਪਰ ਆਰਕੀਟੈਕਚਰ", category: "ਕ੍ਰਿਆਤਮਕ ਸਵਾਧਿਆਇ" },
+        4: { title: "ਸਾਖੀ ਸੰਗ੍ਰਹਿ (11 ਚਰਨ)", subtitle: "੧੧-ਚਰਣੀ ਸਵਾਧਿਆਇ ਸਟੈਪਰ ਆਰਕੀਟੈਕਚਰ", category: "ਕ੍ਰਿਆਤਮਕ ਸਵਾਧਿਆਇ" },
         5: { title: "ਉਲਟਬਾਣੀ ਗ੍ਰੰਥਾਵਲੀ", subtitle: "3D Style Gamified Gaming Quiz Engine", category: "ਗੂੜ੍ਹ ਬੁਝਾਰਤਾਂ" },
         6: { title: "ਸ੍ਰੀ ਗੁਰੂ ਗ੍ਰੰਥ ਸਾਹਿਬ ਬਾਣੀ", subtitle: "ਭਗਤ ਕਬੀਰ ਜੀ ਦੇ ਸਲੋਕ ਅਤੇ ਰਾਗ", category: "ਪਵਿੱਤਰ ਗੁਰਬਾਣੀ" },
         7: { title: "ਕਬੀਰ ਬਾਣੀ ਅਤੇ ਭਜਨ", subtitle: "ਅਮਰ ਭਜਨ, ਪਦ ਅਤੇ ਨਾਦ ਸਾਧਨਾ", category: "ਨਾਦ ਅਤੇ ਰਸ" },
@@ -840,12 +1017,13 @@ export default function App() {
     setCurrentView('vaultReader');
   };
 
-  // Filter Vaults via Search Query
+  // Filter Vaults via Search Query and Category Filter
   const filteredVaults = vaults.filter(v => {
     const q = searchQuery.toLowerCase().trim();
-    if (!q) return true;
     const localized = getVaultTitle(v);
-    return (
+    
+    // 1. Text Search Logic
+    const matchesText = !q || (
       localized.title.toLowerCase().includes(q) ||
       localized.subtitle.toLowerCase().includes(q) ||
       localized.category.toLowerCase().includes(q) ||
@@ -853,6 +1031,23 @@ export default function App() {
       v.hindiTitle.toLowerCase().includes(q) ||
       v.category.toLowerCase().includes(q)
     );
+
+    // 2. Category Filter Logic (Advanced Filter)
+    let matchesCategory = true;
+    if (searchFilter !== 'all') {
+      const cat = v.category.toLowerCase();
+      if (searchFilter === 'sadhan') {
+        matchesCategory = cat.includes('साधना') || cat.includes('practice');
+      } else if (searchFilter === 'granth') {
+        matchesCategory = cat.includes('ग्रंथ') || cat.includes('scripture');
+      } else if (searchFilter === 'swadhyay') {
+        matchesCategory = v.id === 4;
+      } else if (searchFilter === 'system') {
+        matchesCategory = v.id === 11 || cat.includes('settings');
+      }
+    }
+
+    return matchesText && matchesCategory;
   });
 
   // Dynamic Data Layer JSON Injection
@@ -910,7 +1105,7 @@ export default function App() {
   const effectiveDevoteeName = devoteeName.trim() || t.defaultDevoteeName;
 
   return (
-    <div className={`main-container theme-${currentTheme} min-h-screen text-${fontSize === 'sm' ? 'sm' : fontSize === 'lg' ? 'lg' : 'base'}`}>
+    <div className={`main-container theme-${currentTheme} font-scale-${fontSize} min-h-screen`}>
 
       {/* Offline Status Bar - Prominent Reassurance Banner */}
       {!isOnline && (
@@ -949,6 +1144,17 @@ export default function App() {
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* App Icon & Branding Banner */}
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-300">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500 shadow-md bg-amber-100 shrink-0">
+                <img src="/icons/kabir-swaroop.png" alt="Saheb World Icon" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-[#8B0000] m-0">श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ</h4>
+                <p className="text-[11px] text-amber-900 font-medium m-0">साहेब वर्ल्ड (Saheb World) PWA</p>
+              </div>
             </div>
 
             {/* Biochemic Veda Style Step Cards */}
@@ -1020,8 +1226,25 @@ export default function App() {
         {/* =========================================================================
             2. MAIN WORKSPACE WITH DYNAMIC HEADER & THEME SELECTION (MOBILE OPTIMIZED)
            ========================================================================= */
-        <div className="p-3 md:p-6 max-w-4xl mx-auto pb-24 main-container">
+        <div className={`p-3 md:p-6 max-w-4xl mx-auto pb-24 main-container font-scale-${fontSize}`}>
           
+          {hasGmpQuotaExceeded && (
+            <div className="bg-amber-50 border-b border-amber-200 text-amber-900 px-4 py-2 text-xs text-center sticky top-0 z-50 shadow-sm rounded-xl mb-2 flex items-center justify-between gap-2">
+              <span>
+                Google Maps Platform quota reached. If you are the app owner, visit{' '}
+                <a
+                  href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-semibold text-amber-950 hover:text-amber-800"
+                >
+                  maps developer site
+                </a>{' '}
+                for instructions.
+              </span>
+              <button onClick={() => setHasGmpQuotaExceeded(false)} className="text-amber-700 hover:text-amber-900 font-bold px-2 py-0.5">✕</button>
+            </div>
+          )}
           {/* Offline State & UX Manager Banner */}
           <OfflineBanner />
           {/* Top Sticky Toolbar - Organized for Mobile Screens */}
@@ -1042,30 +1265,24 @@ export default function App() {
                 <div className="inline-flex items-center p-0.5 bg-amber-100/80 rounded-lg border border-amber-300 shadow-xs">
                   <button
                     onClick={() => setLang('hi')}
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition ${
-                      lang === 'hi'
-                        ? 'bg-[#8B0000] text-white shadow-xs'
-                        : 'text-amber-950 hover:bg-amber-200/50'
+                    className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
+                      lang === 'hi' ? 'lang-btn-active' : 'lang-btn-inactive'
                     }`}
                   >
                     हिन्दी
                   </button>
                   <button
                     onClick={() => setLang('pa')}
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition ${
-                      lang === 'pa'
-                        ? 'bg-[#8B0000] text-white shadow-xs'
-                        : 'text-amber-950 hover:bg-amber-200/50'
+                    className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
+                      lang === 'pa' ? 'lang-btn-active' : 'lang-btn-inactive'
                     }`}
                   >
                     ਪੰਜਾਬੀ
                   </button>
                   <button
                     onClick={() => setLang('en')}
-                    className={`px-2 py-1 text-[11px] font-bold rounded-md transition ${
-                      lang === 'en'
-                        ? 'bg-[#8B0000] text-white shadow-xs'
-                        : 'text-amber-950 hover:bg-amber-200/50'
+                    className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
+                      lang === 'en' ? 'lang-btn-active' : 'lang-btn-inactive'
                     }`}
                   >
                     Eng
@@ -1096,6 +1313,34 @@ export default function App() {
                   >
                     <Smartphone className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">{t.installApp}</span>
+                  </button>
+                )}
+
+                {/* Devotee Account & Firebase Cloud Sync Button */}
+                {currentUser ? (
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="p-1 sm:px-2 sm:py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                    title={`${currentUser.displayName || 'साधक'} - क्लाउड सिंक सक्रिय`}
+                  >
+                    {currentUser.photoURL ? (
+                      <img src={currentUser.photoURL} alt="" className="w-4 h-4 rounded-full object-cover border border-emerald-500" />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">
+                        {(currentUser.displayName || 'स')[0]}
+                      </div>
+                    )}
+                    <span className="hidden sm:inline max-w-[70px] truncate">{currentUser.displayName?.split(' ')[0] || 'साधक'}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" title="Cloud Synced" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="p-1 sm:px-2 sm:py-1 rounded-lg bg-white/95 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-bold shadow-xs flex items-center gap-1 cursor-pointer transition active:scale-95"
+                    title={lang === 'pa' ? 'ਸਾਧਕ ਪ੍ਰੋਫਾਈਲ ਤੇ ਸਿੰਕ' : lang === 'en' ? 'Profile & Sync' : 'साधक प्रोफ़ाइल व सिंक'}
+                  >
+                    <UserIcon className="w-3.5 h-3.5 text-amber-700" />
+                    <span className="hidden sm:inline">{lang === 'pa' ? 'ਸਿੰਕ' : lang === 'en' ? 'Sync' : 'सिंक'}</span>
                   </button>
                 )}
               </div>
@@ -1191,6 +1436,48 @@ export default function App() {
             </div>
           </header>
 
+          {/* Quick Spiritual Actions Bar (Alarms, Resolutions, Reports, Yugas) */}
+          <div className="flex items-center justify-between gap-1.5 p-2 bg-amber-100/70 border border-amber-300/80 rounded-xl mb-4 overflow-x-auto">
+            <button
+              onClick={() => setShowAlarmModal(true)}
+              className="px-2.5 py-1 rounded-lg bg-amber-800 hover:bg-amber-900 text-amber-100 text-xs font-bold flex items-center gap-1 shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+            >
+              <Bell className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === 'pa' ? 'ਅਲਾਰਮ' : lang === 'en' ? 'Alarms' : 'साधना अलार्म 🔔'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowResolutionModal(true)}
+              className="px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-amber-100 text-xs font-bold flex items-center gap-1 shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+            >
+              <Heart className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === 'pa' ? 'ਦੈਨਿਕ ਸੰਕਲਪ' : lang === 'en' ? 'Vow' : 'दैनिक संकल्प 🙏'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowReportCardModal(true)}
+              className="px-2.5 py-1 rounded-lg bg-[#8B0000] hover:bg-amber-950 text-white text-xs font-bold flex items-center gap-1 shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+            >
+              <Award className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === 'pa' ? 'ਰਿਪੋਰਟ ਕਾਰਡ' : lang === 'en' ? 'Report Card' : 'साधना रिपोर्ट 📜'}</span>
+            </button>
+            <button
+              onClick={() => setShowYugaModal(true)}
+              className="px-2.5 py-1 rounded-lg bg-[#701A07] hover:bg-amber-900 text-amber-100 text-xs font-bold flex items-center gap-1 shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === 'pa' ? '੪-ਜੁਗ ਇਤਿਹਾਸ' : lang === 'en' ? '4 Yugas' : '४-युग अवतार ⏳'}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('mala')}
+              className="px-2.5 py-1 rounded-lg bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold flex items-center gap-1 shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+            >
+              <div className="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center text-[10px]">📿</div>
+              <span>{lang === 'pa' ? 'ਮਾਲਾ ਜਪ' : lang === 'en' ? 'Mala' : 'माला जप 📿'}</span>
+            </button>
+          </div>
+
           {/* =========================================================================
               ADMINISTRATIVE DYNAMIC DATA INJECTION MODAL (For Empty Database Slots)
              ========================================================================= */}
@@ -1277,7 +1564,73 @@ export default function App() {
               VIEW A: DASHBOARD (Universal Query + Empty 11-Sacred Granth Library Vaults)
              ========================================================================= */}
           {currentView === 'dashboard' && (
-            <div>
+            <div className="space-y-6">
+              {/* Top Banner & Live Meditation Indicator */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                 <div className="flex-1">
+                    <DailyWisdomWidget lang={lang} />
+                 </div>
+                 
+                 {/* Live Meditation Signal */}
+                 <div 
+                    onClick={() => {
+                      setIsLiveMeditation(true);
+                      playGentleBell(528);
+                    }}
+                    className={`w-full sm:w-64 p-4 rounded-3xl border-2 transition-all cursor-pointer flex flex-col justify-center items-center text-center space-y-2 group overflow-hidden relative ${isLiveMeditation ? 'bg-emerald-50 border-emerald-500 shadow-emerald-200 shadow-xl' : 'bg-white border-amber-200 hover:border-orange-400'}`}
+                 >
+                    <div className="flex items-center gap-2">
+                       <div className={`w-2.5 h-2.5 rounded-full ${isLiveMeditation ? 'bg-emerald-600 animate-pulse' : 'bg-red-600 animate-ping'}`} />
+                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Live Global Sumiran</span>
+                    </div>
+                    <h4 className="font-black text-amber-900 text-sm m-0">सामूहिक सुमिरन (Live)</h4>
+                    <p className="text-[10px] text-gray-600 font-medium m-0">Join 1,240+ souls right now</p>
+                    <button className={`mt-2 px-4 py-1.5 rounded-xl text-[10px] font-bold transition ${isLiveMeditation ? 'bg-emerald-600 text-white' : 'bg-[#8B0000] text-white'}`}>
+                      {isLiveMeditation ? 'Connected ✓' : 'Join Now 🙏'}
+                    </button>
+                 </div>
+              </div>
+
+              {/* Advanced Sacred Insights Bar (New Features) */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 <button 
+                   onClick={() => setShowWisdomChatModal(true)}
+                   className="p-3 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white flex flex-col items-center gap-1 shadow-lg hover:scale-105 transition"
+                 >
+                    <Bot className="w-5 h-5" />
+                    <span className="text-[10px] font-black">Saheb AI Assistant</span>
+                 </button>
+                 <button 
+                   onClick={() => setShowMapModal(true)}
+                   className="p-3 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex flex-col items-center gap-1 shadow-lg hover:scale-105 transition"
+                 >
+                    <MapIcon className="w-5 h-5" />
+                    <span className="text-[10px] font-black">Pilgrimage Map</span>
+                 </button>
+                 <button 
+                   onClick={() => setShowGlossaryModal(true)}
+                   className="p-3 rounded-2xl bg-gradient-to-br from-[#8B0000] to-red-900 text-white flex flex-col items-center gap-1 shadow-lg hover:scale-105 transition"
+                 >
+                    <Book className="w-5 h-5" />
+                    <span className="text-[10px] font-black">Sacred Glossary</span>
+                 </button>
+                 <div 
+                   onClick={() => setShowProfileModal(true)}
+                   className="p-3 rounded-2xl bg-white border border-amber-200 flex flex-col items-center justify-center gap-1 shadow-md cursor-pointer hover:border-amber-400 hover:shadow-lg transition group"
+                   title={lang === 'pa' ? 'ਸਾਧਨਾ ਮੈਡਲ ਵੇਰਵਾ ਵੇਖੋ' : lang === 'en' ? 'View Growth Badge Details' : 'आध्यात्मिक प्रगति सोपान विवरण देखें'}
+                 >
+                    <div className="flex items-center gap-1">
+                       <Trophy className="w-4 h-4 text-amber-500 group-hover:scale-110 transition" />
+                       <span className="text-[14px] font-black text-amber-900">{sadhanaStreak}</span>
+                    </div>
+                    <span className="text-[9px] font-black uppercase text-gray-400">
+                      {sadhanaStreak >= 100 ? 'हंस (Hans)' : sadhanaStreak >= 30 ? 'साधक' : 'जिज्ञासु'} Badge
+                    </span>
+                 </div>
+              </div>
+
+              {/* Sadhana Calendar Integration */}
+              <SadhanaCalendar lang={lang} history={sadhanaHistory} dailyGoal={dailyGoalMinutes} />
               {/* Hidden file input for Backup Restore */}
               <input
                 type="file"
@@ -1307,6 +1660,34 @@ export default function App() {
                 )}
               </div>
 
+              {/* Advanced Category Pills Filter */}
+              <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 no-scrollbar">
+                {[
+                  { id: 'all', label: lang === 'pa' ? 'ਸਭ (All)' : lang === 'en' ? 'All' : 'सभी ग्रंथ' },
+                  { id: 'sadhan', label: lang === 'pa' ? 'ਸਾਧਨਾ' : lang === 'en' ? 'Practice' : 'साधना (Ritual)' },
+                  { id: 'granth', label: lang === 'pa' ? 'ਪਰਮ ਗ੍ਰੰਥ' : lang === 'en' ? 'Scriptures' : 'परम ग्रंथ (Holy)' },
+                  { id: 'swadhyay', label: lang === 'pa' ? 'ਸਵਾਧਿਆਇ' : lang === 'en' ? 'Swadhyay' : 'स्वाध्याय (11-Step)' },
+                  { id: 'system', label: lang === 'pa' ? 'ਸਿਸਟਮ' : lang === 'en' ? 'System' : 'सक्षम/सेटिंग्स' }
+                ].map((pill) => (
+                  <button
+                    key={pill.id}
+                    onClick={() => {
+                      setSearchFilter(pill.id as any);
+                      playGentleBell(432);
+                    }}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap border-2 shadow-sm cursor-pointer ${
+                      searchFilter === pill.id 
+                        ? 'bg-[#8B0000] text-white border-amber-400' 
+                        : 'bg-white text-amber-900 border-amber-200 hover:bg-amber-50'
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
+
+
+
               {/* Collapsible Spiritual Audio Player for Bhajans & Chants */}
               {showBhajanPlayer && (
                 <div className="mb-5">
@@ -1334,15 +1715,23 @@ export default function App() {
                 {/* Font Size Adjustments */}
                 <div className="flex items-center gap-1 text-xs">
                   <button
-                    onClick={() => setFontSize(fontSize === 'lg' ? 'md' : 'sm')}
-                    className="w-7 h-7 rounded border border-amber-300 bg-white/70 flex items-center justify-center font-bold text-xs"
+                    onClick={() => {
+                      const next = fontSize === 'xl' ? 'lg' : fontSize === 'lg' ? 'md' : 'sm';
+                      setFontSize(next);
+                      showToast('अक्षर आकार: ' + (next === 'lg' ? 'बड़ा (Large)' : next === 'md' ? 'सामान्य (Normal)' : 'छोटा (Small)'));
+                    }}
+                    className="w-8 h-8 rounded-lg border border-amber-300 bg-white/90 text-amber-950 flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer hover:bg-amber-100 transition active:scale-95"
                     title={t.fontSmall}
                   >
                     {t.fontSmall}
                   </button>
                   <button
-                    onClick={() => setFontSize(fontSize === 'sm' ? 'md' : 'lg')}
-                    className="w-7 h-7 rounded border border-amber-300 bg-white/70 flex items-center justify-center font-bold text-xs"
+                    onClick={() => {
+                      const next = fontSize === 'sm' ? 'md' : fontSize === 'md' ? 'lg' : 'xl';
+                      setFontSize(next);
+                      showToast('अक्षर आकार: ' + (next === 'md' ? 'सामान्य (Normal)' : next === 'lg' ? 'बड़ा (Large)' : 'अति विशाल (XL)'));
+                    }}
+                    className="w-8 h-8 rounded-lg border border-amber-300 bg-white/90 text-amber-950 flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer hover:bg-amber-100 transition active:scale-95"
                     title={t.fontLarge}
                   >
                     {t.fontLarge}
@@ -1527,6 +1916,144 @@ export default function App() {
                 })}
               </div>
 
+              {/* Sakhi Action Toolbar: Language Selector & Image/Text Download */}
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-5 p-3 bg-amber-50/90 border border-amber-300 rounded-xl shadow-sm">
+                {/* Language Switcher */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-amber-950 dark:text-amber-300 mr-1">
+                    {lang === 'pa' ? 'ਭਾਸ਼ਾ:' : lang === 'en' ? 'Language:' : 'भाषा:'}
+                  </span>
+                  {(['hi', 'pa', 'en'] as Language[]).map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => setLang(l)}
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                        lang === l ? 'lang-btn-active' : 'lang-btn-inactive'
+                      }`}
+                    >
+                      {l === 'hi' ? 'हिन्दी' : l === 'pa' ? 'ਪੰਜਾਬੀ' : 'English'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Download & Share Actions */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      if ('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance(`${swadhyayData.original_text}. भावार्थ: ${swadhyayData.deep_bhavarth}`);
+                        utterance.lang = lang === 'pa' ? 'pa-IN' : lang === 'en' ? 'en-US' : 'hi-IN';
+                        utterance.rate = 0.9;
+                        window.speechSynthesis.speak(utterance);
+                        showToast(lang === 'pa' ? 'ਸਾਖੀ ਦਾ ਆਡੀਓ ਵਾਚਨ ਸ਼ੁਰੂ ਹੋ ਗਿਆ ਹੈ...' : lang === 'en' ? 'Audio recitation started...' : 'साखी का ऑडियो वाचन प्रारंभ हो गया है...');
+                      } else {
+                        showToast('Speech synthesis not supported.');
+                      }
+                    }}
+                    className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-bold flex items-center gap-1 shadow cursor-pointer"
+                    title="साखी और भावार्थ का ऑडियो वाचन सुनें"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>सुनें</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const bookmarks = JSON.parse(localStorage.getItem('saheb_bookmarked_sakhis') || '[]');
+                      const sakhiTitle = "रितु बसंत याचक भया";
+                      if (bookmarks.includes(sakhiTitle)) {
+                        const filtered = bookmarks.filter((b: string) => b !== sakhiTitle);
+                        localStorage.setItem('saheb_bookmarked_sakhis', JSON.stringify(filtered));
+                        showToast(lang === 'pa' ? 'ਪਸੰਦੀਦਾ ਸੂਚੀ ਵਿੱਚੋਂ ਹਟਾਇਆ ਗਿਆ' : lang === 'en' ? 'Removed from favorites' : 'प्रिय साखी सूची से हटाया गया');
+                      } else {
+                        bookmarks.push(sakhiTitle);
+                        localStorage.setItem('saheb_bookmarked_sakhis', JSON.stringify(bookmarks));
+                        showToast(lang === 'pa' ? 'ਪਸੰਦੀਦਾ ਸੂਚੀ ਵਿੱਚ ਜੋੜਿਆ ਗਿਆ!' : lang === 'en' ? 'Added to favorites!' : 'प्रिय साखी के रूप में सहेजा गया!');
+                      }
+                    }}
+                    className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                    title="प्रिय साखी के रूप में सहेजें"
+                  >
+                    <Bookmark className="w-3.5 h-3.5 text-amber-700" />
+                    <span>सहेजें</span>
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      showToast(lang === 'pa' ? 'ਕਾਰਡ (F-1) ਤਿਆਰ ਹੋ ਰਿਹਾ ਹੈ... 🎨' : lang === 'en' ? 'Generating Card (F-1)... 🎨' : 'पर्चमेंट कार्ड (F-1) चित्र तैयार हो रहा है... 🎨');
+                      const imgUrl = await generateAndDownloadSakhiCard({
+                        titleHi: "रितु बसंत याचक भया",
+                        titlePa: "ਰਿਤੁ ਬਸੰਤੁ ਜਾਚਕੁ ਭਇਆ",
+                        coupletHi: swadhyayData.original_text,
+                        coupletPa: swadhyayData.original_text_pa || swadhyayData.original_text,
+                        coupletEn: swadhyayData.transliteration || swadhyayData.original_text,
+                        bhavarthHi: swadhyayData.deep_bhavarth,
+                        bhavarthPa: swadhyayData.deep_bhavarth_pa || swadhyayData.deep_bhavarth,
+                        bhavarthEn: swadhyayData.deep_bhavarth_en || swadhyayData.deep_bhavarth,
+                        sakhiNumber: "103"
+                      }, 'parchment', lang);
+                      if (imgUrl) {
+                        setSakhiModalImageUrl(imgUrl);
+                        setSakhiModalFormatName(lang === 'pa' ? 'ਪਰਚਮੈਂਟ ਕਾਰਡ (F-1)' : lang === 'en' ? 'Parchment Card (F-1)' : 'पर्चमेंट कार्ड (F-1)');
+                        setShowSakhiImageModal(true);
+                        showToast(lang === 'pa' ? 'ਕਾਰਡ (F-1) ਤਿਆਰ ਹੋ ਗਿਆ! 🌹' : lang === 'en' ? 'Card (F-1) Ready! 🌹' : 'पर्चमेंट कार्ड (F-1) तैयार हुआ! 🌹');
+                      } else {
+                        showToast('इमेज डाउनलोड त्रुटि। कृपया पुनः प्रयास करें।');
+                      }
+                    }}
+                    className="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white rounded-md text-xs font-bold flex items-center gap-1 shadow cursor-pointer transition active:scale-95"
+                    title="पर्चमेंट कार्ड इमेज डाउनलोड करें (Format 1 - Image 1)"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>कार्ड (F-1)</span>
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      showToast(lang === 'pa' ? 'ਵਾਲਪੇਪਰ (F-2) ਤਿਆਰ ਹੋ ਰਿਹਾ ਹੈ... 🌅' : lang === 'en' ? 'Generating Wallpaper (F-2)... 🌅' : 'वॉलपेपर (F-2) चित्र तैयार हो रहा है... 🌅');
+                      const imgUrl = await generateAndDownloadSakhiCard({
+                        titleHi: "रितु बसंत याचक भया",
+                        titlePa: "ਰਿਤੁ ਬਸੰਤੁ ਜਾਚਕੁ ਭਇਆ",
+                        coupletHi: swadhyayData.original_text,
+                        coupletPa: swadhyayData.original_text_pa || swadhyayData.original_text,
+                        coupletEn: swadhyayData.transliteration || swadhyayData.original_text,
+                        bhavarthHi: swadhyayData.deep_bhavarth,
+                        bhavarthPa: swadhyayData.deep_bhavarth_pa || swadhyayData.deep_bhavarth,
+                        bhavarthEn: swadhyayData.deep_bhavarth_en || swadhyayData.deep_bhavarth,
+                        sakhiNumber: "103"
+                      }, 'scenic', lang);
+                      if (imgUrl) {
+                        setSakhiModalImageUrl(imgUrl);
+                        setSakhiModalFormatName(lang === 'pa' ? 'ਪ੍ਰਾਕ੍ਰਿਤਿਕ ਵਾਲਪੇਪਰ (F-2)' : lang === 'en' ? 'Scenic Wallpaper (F-2)' : 'प्राकृतिक वॉलपेपर (F-2)');
+                        setShowSakhiImageModal(true);
+                        showToast(lang === 'pa' ? 'ਵਾਲਪੇਪਰ (F-2) ਤਿਆਰ ਹੋ ਗਿਆ! 🌹' : lang === 'en' ? 'Wallpaper (F-2) Ready! 🌹' : 'प्राकृतिक वॉलपेपर (F-2) तैयार हुआ! 🌹');
+                      } else {
+                        showToast('इमेज डाउनलोड त्रुटि। कृपया पुनः प्रयास करें।');
+                      }
+                    }}
+                    className="px-2.5 py-1 bg-[#701A07] hover:bg-[#8B0000] text-amber-200 rounded-md text-xs font-bold flex items-center gap-1 shadow cursor-pointer transition active:scale-95"
+                    title="प्राकृतिक वॉलपेपर इमेज डाउनलोड करें (Format 2 - Image 2)"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>वॉलपेपर (F-2)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const textToCopy = `${swadhyayData.original_text}\n\nभावार्थ:\n${swadhyayData.deep_bhavarth}\n\n— श्री सद्गुरु कबीर साहेब स्वाध्याय पीठ — साहेब वर्ल्ड`;
+                      navigator.clipboard.writeText(textToCopy);
+                      showToast(lang === 'pa' ? 'ਸਾਖੀ ਕਾਪੀ ਹੋ ਗਈ!' : lang === 'en' ? 'Sakhi copied!' : 'साखी टेक्स्ट क्लिपबोर्ड पर कॉपी हो गया!');
+                    }}
+                    className="px-2.5 py-1 bg-white border border-amber-300 text-amber-900 rounded-md text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                    title="टेक्स्ट कॉपी करें"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>कॉपी</span>
+                  </button>
+                </div>
+              </div>
+
               {/* ----------------- STEP 1: विषय संदर्भ ----------------- */}
               {currentStep === 1 && (
                 <div className="space-y-4">
@@ -1535,6 +2062,16 @@ export default function App() {
                     <h4 className="font-bold text-base md:text-lg text-amber-900 m-0">
                       {lang === 'pa' ? '੧. ਵਿਸ਼ਾ ਪ੍ਰਸੰਗ (Context Slot)' : lang === 'en' ? '1. Contextual Background (Context Slot)' : '१. विषय संदर्भ (Context Slot)'}
                     </h4>
+                    <button 
+                      onClick={() => {
+                         setWisdomChatContext(`Subject Context: ${swadhyayData.context}`);
+                         setShowWisdomChatModal(true);
+                      }}
+                      className="ml-auto p-1.5 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition flex items-center gap-1 text-[10px] font-bold"
+                    >
+                       <Bot className="w-3 h-3" />
+                       AI Help
+                    </button>
                   </div>
                   {swadhyayData.context ? (
                     <p className={`leading-relaxed text-gray-800 ${lineGuideActive ? 'line-guide-active p-3 rounded' : ''}`}>
@@ -1564,10 +2101,36 @@ export default function App() {
                     </h4>
                   </div>
                   {swadhyayData.original_text ? (
-                    <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-300 text-center space-y-2">
-                      <p className="text-lg md:text-xl font-black text-[#8B0000] italic leading-relaxed">
-                        {swadhyayData.original_text}
+                    <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-300 text-center space-y-4">
+                      <p className="text-lg md:text-xl font-black text-[#8B0000] italic leading-relaxed whitespace-pre-line">
+                        {lang === 'pa'
+                          ? (swadhyayData.original_text_pa || swadhyayData.original_text)
+                          : lang === 'en'
+                          ? (swadhyayData.transliteration || swadhyayData.original_text)
+                          : swadhyayData.original_text}
                       </p>
+
+                      {/* --- LOCALIZED SETTINGS BAR (Requested Fix for Step 2) --- */}
+                      <div className="pt-4 border-t border-amber-200 flex flex-wrap items-center justify-center gap-3">
+                         <div className="flex items-center gap-1.5 p-1 bg-amber-100/50 rounded-xl border border-amber-200">
+                            <button onClick={() => setLang('hi')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition ${lang === 'hi' ? 'bg-[#8B0000] text-white' : 'bg-white text-amber-900'}`}>हिन्दी</button>
+                            <button onClick={() => setLang('pa')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition ${lang === 'pa' ? 'bg-[#8B0000] text-white' : 'bg-white text-amber-900'}`}>ਪੰਜਾਬੀ</button>
+                            <button onClick={() => setLang('en')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition ${lang === 'en' ? 'bg-[#8B0000] text-white' : 'bg-white text-amber-900'}`}>Eng</button>
+                         </div>
+
+                         <div className="flex items-center gap-1.5 p-1 bg-amber-100/50 rounded-xl border border-amber-200">
+                            <button onClick={() => setCurrentTheme('night')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition ${currentTheme === 'night' ? 'bg-amber-600 text-white' : 'bg-white text-amber-900'}`}>🌙 Night</button>
+                            <button onClick={() => setCurrentTheme('trueblack')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition ${currentTheme === 'trueblack' ? 'bg-black text-[#FFD700]' : 'bg-white text-amber-900'}`}>🖤 OLED</button>
+                            <button onClick={() => setCurrentTheme('pothi')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition ${currentTheme === 'pothi' ? 'bg-[#8B0000] text-white' : 'bg-white text-amber-900'}`}>📜 Pothi</button>
+                         </div>
+
+                         <div className="flex items-center gap-1.5 p-1 bg-amber-100/50 rounded-xl border border-amber-200">
+                            <button onClick={() => speakText(lang === 'pa' ? (swadhyayData.original_text_pa || swadhyayData.original_text) : swadhyayData.original_text)} className="px-3 py-1 bg-emerald-700 text-white text-[10px] font-bold rounded-lg flex items-center gap-1.5">
+                               <Volume2 className="w-3 h-3" />
+                               <span>{lang === 'pa' ? 'ਸੁਣੋ' : lang === 'en' ? 'Listen' : 'सुनें'}</span>
+                            </button>
+                         </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="p-6 rounded-2xl border border-dashed border-amber-300 bg-amber-50/50 text-center space-y-2">
@@ -1592,7 +2155,7 @@ export default function App() {
                       {lang === 'pa' ? '੩. ਸ਼ਬਦਾਰਥ ਕਪਾਟ (Glossary Slot)' : lang === 'en' ? '3. Vocabulary & Glossary' : '३. शब्दार्थ कपाट (Glossary Slot)'}
                     </h4>
                   </div>
-                  {swadhyayData.vocabulary.length > 0 ? (
+                  {(swadhyayData.vocabulary && swadhyayData.vocabulary.length > 0) ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {swadhyayData.vocabulary.map((v, idx) => (
                         <div key={idx} className="p-2.5 rounded-xl bg-white border border-amber-200 text-xs">
@@ -1617,10 +2180,24 @@ export default function App() {
                     <h4 className="font-bold text-base md:text-lg text-amber-900 m-0">
                       {lang === 'pa' ? '੪. ਗੂੜ੍ਹ ਭਾਵਾਰਥ (Spiritual Discourse)' : lang === 'en' ? '4. Deep Spiritual Commentary' : '४. अंतःकरण सत्संग एवं भावार्थ'}
                     </h4>
+                    <button 
+                      onClick={() => {
+                         setWisdomChatContext(`Deep Essence: ${swadhyayData.deep_bhavarth}`);
+                         setShowWisdomChatModal(true);
+                      }}
+                      className="ml-auto p-1.5 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition flex items-center gap-1 text-[10px] font-bold"
+                    >
+                       <Bot className="w-3 h-3" />
+                       AI Help
+                    </button>
                   </div>
                   {swadhyayData.deep_bhavarth ? (
                     <p className={`leading-relaxed text-gray-800 ${lineGuideActive ? 'line-guide-active p-3 rounded' : ''}`}>
-                      {swadhyayData.deep_bhavarth}
+                      {lang === 'pa'
+                        ? (swadhyayData.deep_bhavarth_pa || swadhyayData.deep_bhavarth)
+                        : lang === 'en'
+                        ? (swadhyayData.deep_bhavarth_en || swadhyayData.deep_bhavarth)
+                        : swadhyayData.deep_bhavarth}
                     </p>
                   ) : (
                     <div className="p-4 rounded-xl border border-dashed border-amber-300 bg-amber-50/50 text-center">
@@ -1631,42 +2208,90 @@ export default function App() {
                 </div>
               )}
 
-              {/* ----------------- STEP 5: प्रज्ञा प्रश्नोत्तरी ----------------- */}
+              {/* ----------------- STEP 5: प्रज्ञा प्रश्नोत्तरी (5 Questions) ----------------- */}
               {currentStep === 5 && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs">5</span>
-                    <h4 className="font-bold text-base md:text-lg text-amber-900 m-0">
-                      {lang === 'pa' ? '੫. ਪ੍ਰਗਿਆ ਪ੍ਰਸ਼ਨਾਵਲੀ (Quiz Slot)' : lang === 'en' ? '5. Discernment Quiz (MCQ)' : '५. प्रज्ञा प्रश्नोत्तरी (Quiz Slot)'}
-                    </h4>
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs">5</span>
+                      <h4 className="font-bold text-base md:text-lg text-amber-900 m-0">
+                        {lang === 'pa' ? '੫. ਪ੍ਰਗਿਆ ਪ੍ਰਸ਼ਨਾਵਲੀ (5 ਪ੍ਰਸ਼ਨ)' : lang === 'en' ? '5. Discernment Quiz (5 MCQs)' : '५. प्रज्ञा प्रश्नोत्तरी (5 बहुविकल्पीय प्रश्न)'}
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold px-2.5 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-full">
+                        अंक: {quizScore} / 50
+                      </span>
+                      <button
+                        onClick={() => {
+                          setQuizAnswers({});
+                          setQuizScore(0);
+                          showToast('प्रश्नोत्तरी पुनः रीसेट की गई');
+                        }}
+                        className="text-xs text-amber-700 hover:text-amber-950 underline font-medium cursor-pointer"
+                      >
+                        रीसेट
+                      </button>
+                    </div>
                   </div>
-                  {swadhyayData.mcq_quiz.question ? (
-                    <div className="space-y-3">
-                      <p className="text-sm font-bold text-gray-900">{swadhyayData.mcq_quiz.question}</p>
-                      <div className="space-y-2">
-                        {swadhyayData.mcq_quiz.options.map((opt, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setQuizAnswerSelected(idx);
-                              if (opt.isCorrect) {
-                                setQuizScore(prev => prev + 10);
-                                playGentleBell(528);
-                              }
-                            }}
-                            className={`w-full p-2.5 rounded-xl border text-left text-xs font-medium transition ${quizAnswerSelected === idx ? (opt.isCorrect ? 'bg-emerald-100 border-emerald-500 text-emerald-950 font-bold' : 'bg-red-50 border-red-400 text-red-900') : 'bg-white border-amber-200 hover:bg-amber-50'}`}
-                          >
-                            {opt.text}
-                          </button>
-                        ))}
+
+                  {((swadhyayData.mcq_quiz && swadhyayData.mcq_quiz.questions && swadhyayData.mcq_quiz.questions.length > 0)
+                    ? swadhyayData.mcq_quiz.questions
+                    : [
+                        {
+                          id: 1,
+                          question: (swadhyayData.mcq_quiz && swadhyayData.mcq_quiz.question) || "1. साखी में 'याचक' (माँगने वाला) किसे कहा गया है?",
+                          options: (swadhyayData.mcq_quiz && swadhyayData.mcq_quiz.options) || []
+                        }
+                      ]
+                  ).map((qItem, qIdx) => {
+                    const selectedOptIdx = quizAnswers[qIdx];
+                    return (
+                      <div key={qIdx} className="p-4 rounded-2xl bg-white border border-amber-200 shadow-xs space-y-3">
+                        <p className="text-sm font-bold text-gray-900 m-0">
+                          {qItem.question}
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {(qItem.options || []).map((opt, optIdx) => {
+                            const isSelected = selectedOptIdx === optIdx;
+                            let btnStyle = "bg-amber-50/50 border-amber-200 hover:bg-amber-100/60 text-gray-800";
+                            if (isSelected) {
+                              btnStyle = opt.isCorrect
+                                ? "bg-emerald-100 border-emerald-500 text-emerald-950 font-bold"
+                                : "bg-red-100 border-red-500 text-red-950 font-bold";
+                            }
+                            return (
+                              <button
+                                key={optIdx}
+                                onClick={() => {
+                                  if (selectedOptIdx !== undefined) return;
+                                  setQuizAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
+                                  if (opt.isCorrect) {
+                                    setQuizScore(prev => prev + 10);
+                                    playGentleBell(528);
+                                    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+                                  } else {
+                                    playGentleBell(396);
+                                  }
+                                }}
+                                className={`w-full p-2.5 rounded-xl border text-left text-xs transition cursor-pointer flex items-start gap-2 ${btnStyle}`}
+                              >
+                                <span className="font-bold shrink-0">{String.fromCharCode(65 + optIdx)}.</span>
+                                <div className="flex-1">
+                                  <span>{opt.text}</span>
+                                  {isSelected && (
+                                    <p className="mt-1 text-[11px] font-normal leading-tight opacity-90">
+                                      {opt.explanation}
+                                    </p>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-xl border border-dashed border-amber-300 bg-amber-50/50 text-center">
-                      <p className="text-xs font-bold text-amber-900 m-0">प्रज्ञा प्रश्नोत्तरी: रिक्त स्लॉट</p>
-                      <p className="text-[11px] text-gray-500 mt-1">{t.slotWaiting}</p>
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
               )}
 
@@ -1678,6 +2303,16 @@ export default function App() {
                     <h4 className="font-bold text-base md:text-lg text-amber-900 m-0">
                       {lang === 'pa' ? '੬. ਘਟ ਦੇ ਅੰਦਰ ਦਾ ਰਹੱਸ' : lang === 'en' ? '6. Inner Esoteric Mystery' : '६. घट के भीतर का रहस्य'}
                     </h4>
+                    <button 
+                      onClick={() => {
+                         setWisdomChatContext(`Inner Mystery: ${swadhyayData.inner_mystery}`);
+                         setShowWisdomChatModal(true);
+                      }}
+                      className="ml-auto p-1.5 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition flex items-center gap-1 text-[10px] font-bold"
+                    >
+                       <Bot className="w-3 h-3" />
+                       AI Help
+                    </button>
                   </div>
                   {swadhyayData.inner_mystery ? (
                     <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-300">
@@ -1711,7 +2346,7 @@ export default function App() {
                       {lang === 'pa' ? '੭. ਅੱਜ ਦੀ ਮੁੱਖ ਸਿੱਖਿਆ' : lang === 'en' ? '7. Daily Core Teachings' : '७. आज की मुख्य शिक्षा'}
                     </h4>
                   </div>
-                  {swadhyayData.key_learnings.length > 0 ? (
+                  {(swadhyayData.key_learnings && swadhyayData.key_learnings.length > 0) ? (
                     swadhyayData.key_learnings.map((k, idx) => (
                       <div key={idx} className="p-3 rounded-xl bg-white border border-amber-200 text-xs md:text-sm">
                         ✓ {k}
@@ -1735,7 +2370,7 @@ export default function App() {
                       {lang === 'pa' ? '੮. ਸ਼ਬਦ-ਪ੍ਰਮਾਣ (Cross-References)' : lang === 'en' ? '8. Scriptural Cross-References' : '८. शब्द-प्रमाण / संबंधित वाणियाँ'}
                     </h4>
                   </div>
-                  {swadhyayData.cross_references.length > 0 ? (
+                  {(swadhyayData.cross_references && swadhyayData.cross_references.length > 0) ? (
                     swadhyayData.cross_references.map((c, idx) => (
                       <div key={idx} className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-xs italic">
                         "{c}"
@@ -1884,10 +2519,10 @@ export default function App() {
                   </button>
 
                   <div className="grid grid-cols-2 gap-2 text-left text-[10px] text-gray-700 mt-2">
-                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama.purak}</div>
-                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama.kumbhak}</div>
-                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama.rechak}</div>
-                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama.shunya}</div>
+                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama?.purak || "पूरक: श्वास ग्रहण"}</div>
+                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama?.kumbhak || "कुंभक: नाम स्थिर"}</div>
+                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama?.rechak || "रेचक: विसर्जन"}</div>
+                    <div className="p-2 bg-amber-50 rounded border border-amber-200">{swadhyayData.nad_pranayama?.shunya || "शून्य: ध्यान"}</div>
                   </div>
                 </div>
               )}
@@ -2019,8 +2654,9 @@ export default function App() {
               VIEW C: DEDICATED VAULT READER (For Vaults 1 to 11 with custom features)
              ========================================================================= */}
           {currentView === 'vaultReader' && selectedVault && (() => {
-            const totalChapters = selectedVault.chapters.length > 0
-              ? selectedVault.chapters.length
+            const chaptersArr = Array.isArray(selectedVault.chapters) ? selectedVault.chapters : [];
+            const totalChapters = chaptersArr.length > 0
+              ? chaptersArr.length
               : (selectedVault.totalChaptersExpected || 10);
             const readList = vaultReadChapters[selectedVault.id] || [];
             const readCount = Math.min(readList.length, totalChapters);
@@ -2132,6 +2768,15 @@ export default function App() {
                         title="OLED True Black (Low-Light Night Reading)"
                       >
                         {t.themeTrueBlack}
+                      </button>
+
+                      <button
+                        onClick={() => setShowSacredReaderModal(true)}
+                        className="px-2 py-0.5 rounded bg-[#8B0000] hover:bg-amber-900 text-amber-100 text-[10px] font-bold transition shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer ml-1"
+                        title="पूर्ण-स्क्रीन एकाग्र वाचन मोड (Fullscreen Reader Mode)"
+                      >
+                        <Eye className="w-3 h-3 text-amber-300" />
+                        <span>{lang === 'pa' ? 'ਪੂਰਨ ਵਾਚਨ 📖' : lang === 'en' ? 'Full Reader 📖' : 'एकाग्र वाचन 📖'}</span>
                       </button>
                     </div>
                   </div>
@@ -2331,7 +2976,7 @@ export default function App() {
               )}
 
               {/* Empty Slot Display or Loaded Chapters */}
-              {selectedVault.chapters.length === 0 ? (
+              {(!selectedVault.chapters || selectedVault.chapters.length === 0) ? (
                 <div className="p-6 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 text-center space-y-3">
                   <Database className="w-8 h-8 text-amber-600 mx-auto" />
                   <h5 className="font-bold text-sm text-[#8B0000] m-0">
@@ -2356,25 +3001,38 @@ export default function App() {
               ) : (
                 /* When Administrator Injected Chapters */
                 <div className={`space-y-3 granth-reader-content ${readerFontScale === 'large' ? 'text-base sm:text-lg' : readerFontScale === 'xlarge' ? 'text-lg sm:text-xl' : 'text-xs sm:text-sm'} ${readerLineHeight === 'relaxed' ? 'leading-relaxed' : readerLineHeight === 'loose' ? 'leading-loose' : 'leading-normal'}`}>
-                  {selectedVault.chapters.map((ch, idx) => {
+                  {(selectedVault.chapters || []).map((ch, idx) => {
                     const isRead = readList.includes(idx);
                     return (
                       <div
-                        key={idx}
+                        key={`vault-${selectedVault.id}-ch-${idx}`}
                         className={`p-3.5 rounded-xl bg-white border transition shadow-sm ${
                           isRead ? 'border-emerald-300 bg-emerald-50/25 ring-1 ring-emerald-300/40' : 'border-amber-200'
                         }`}
                       >
                         <div className="flex justify-between items-center mb-1.5">
                           <h5 className="font-bold text-xs md:text-sm text-amber-900 m-0">{ch.title}</h5>
-                          <button
-                            onClick={() => toggleChapterRead(selectedVault.id, idx, totalChapters)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition flex items-center gap-1 cursor-pointer ${
-                              isRead
-                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300 shadow-xs'
-                                : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
-                            }`}
-                          >
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                setSelectedSectionIdx(idx);
+                                setShowSacredReaderModal(true);
+                                playGentleBell(528);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold flex items-center gap-1 transition shadow-xs cursor-pointer active:scale-95"
+                              title="पावन वाचन मोड (Reading Mode)"
+                            >
+                              <BookOpen className="w-3 h-3" />
+                              <span>{lang === 'pa' ? 'ਵਾਚਨ' : lang === 'en' ? 'Read' : 'वाचन मोड'}</span>
+                            </button>
+                            <button
+                              onClick={() => toggleChapterRead(selectedVault.id, idx, totalChapters)}
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition flex items-center gap-1 cursor-pointer ${
+                                isRead
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300 shadow-xs'
+                                  : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                              }`}
+                            >
                             {isRead && <Check className="w-3 h-3 text-emerald-600" />}
                             <span>
                               {isRead
@@ -2382,9 +3040,10 @@ export default function App() {
                                 : (lang === 'pa' ? 'ਪੜ੍ਹਿਆ ਅੰਕਿਤ ਕਰੋ' : lang === 'en' ? 'Mark Read' : 'पढ़ा चिह्नित करें')}
                             </span>
                           </button>
+                          </div>
                         </div>
-                        <div className="space-y-1 text-xs text-gray-800">
-                          {ch.lines.map((l, lIdx) => <p key={lIdx} className="m-0">{l}</p>)}
+                        <div className="space-y-1 text-xs text-gray-800 line-clamp-3">
+                          {ch.lines.map((l, lIdx) => <p key={`vault-${selectedVault.id}-ch-${idx}-line-${lIdx}-${l.slice(0, 8)}`} className="m-0">{l}</p>)}
                         </div>
                       </div>
                     );
@@ -2407,6 +3066,38 @@ export default function App() {
             </div>
           );
         })()}
+
+        {/* =========================================================================
+            VIEW D: VISUAL JAPA MALA (रोटेटिंग माला जप काउंटर)
+           ========================================================================= */}
+        {currentView === 'mala' && (
+          <div className="card p-4 md:p-6 rounded-3xl border-2 border-amber-300 bg-white shadow-xl animate-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-center mb-4 border-b border-amber-200 pb-3">
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className="text-xs md:text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>{t.backToVaults}</span>
+              </button>
+              <h2 className="text-sm font-black text-amber-900 m-0">।। पावन माला जप ।।</h2>
+              <div className="w-10" /> {/* Spacer */}
+            </div>
+            
+            <VisualMala 
+              lang={lang} 
+              showToast={showToast}
+              count={malaCount}
+              rounds={malaRounds}
+              onTap={handleMalaTap}
+              onReset={() => {
+                setMalaCount(0);
+                localStorage.setItem('saheb_mala_count', '0');
+                showToast('माला रीसेट की गई');
+              }}
+            />
+          </div>
+        )}
         </div>
       }
 
@@ -2420,6 +3111,74 @@ export default function App() {
         >
           <ChevronUp className="w-5 h-5 text-amber-300 group-hover:-translate-y-0.5 transition-transform" />
         </button>
+      )}
+
+      {/* 🖼️ Sakhi Image Download & High-Res Preview Modal */}
+      {showSakhiImageModal && sakhiModalImageUrl && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in">
+          <div className="bg-[#FFFDF9] border-2 border-amber-500 rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto p-4 sm:p-5 shadow-2xl space-y-3.5 text-gray-900">
+            <div className="flex justify-between items-center border-b border-amber-300 pb-2.5">
+              <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-[#8B0000]">
+                <Sparkle className="w-4 h-4 text-amber-600 animate-spin-slow" />
+                <span>🌹 {sakhiModalFormatName} — पावन स्वाध्याय चित्र</span>
+              </div>
+              <button
+                onClick={() => setShowSakhiImageModal(false)}
+                className="text-gray-500 hover:text-black p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* High-Res Image Preview */}
+            <div className="rounded-xl overflow-hidden border-2 border-amber-300 shadow-md bg-black max-h-[50vh] flex items-center justify-center">
+              <img
+                src={sakhiModalImageUrl}
+                alt="Saheb World Sakhi Card"
+                className="w-full h-full object-contain max-h-[50vh]"
+              />
+            </div>
+
+            {/* Direct Mobile Friendly Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <a
+                href={sakhiModalImageUrl}
+                download={`SahebWorld_Sakhi_${Date.now()}.png`}
+                onClick={() => showToast(lang === 'pa' ? 'ਡਾਊਨਲੋਡ ਸ਼ੁਰੂ ਹੋ ਗਿਆ! 🌹' : lang === 'en' ? 'Download started! 🌹' : 'चित्र डाउनलोड प्रारंभ हुआ! 🌹')}
+                className="py-2.5 px-3 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow flex items-center justify-center gap-1.5 transition text-center cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>{lang === 'pa' ? 'ਇਮੇਜ ਡਾਊਨਲੋਡ ਕਰੋ (PNG)' : lang === 'en' ? 'Download PNG Image' : 'इमेज डाउनलोड करें (PNG)'}</span>
+              </a>
+
+              <button
+                onClick={() => {
+                  const newWin = window.open();
+                  if (newWin) {
+                    newWin.document.write(`<img src="${sakhiModalImageUrl}" style="width:100%;max-width:1080px;display:block;margin:auto;" />`);
+                  }
+                }}
+                className="py-2.5 px-3 rounded-xl bg-white border border-amber-300 text-amber-950 font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 hover:bg-amber-50 transition cursor-pointer"
+              >
+                <ExternalLink className="w-4 h-4 text-amber-700" />
+                <span>{lang === 'pa' ? 'ਨਵੀਂ ਵਿੰਡੋ ਵਿੱਚ ਖੋਲ੍ਹੋ' : lang === 'en' ? 'Open in New Window' : 'नई विंडो में खोलें'}</span>
+              </button>
+            </div>
+
+            {/* Mobile Touch & Hold Tip */}
+            <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug flex items-center gap-2">
+              <span className="text-base shrink-0">📱</span>
+              <span>
+                <strong>{lang === 'pa' ? 'ਸਮਾਰਟਫੋਨ ਸੁਝਾਅ:' : lang === 'en' ? 'Smartphone Tip:' : 'स्मार्टफोन सुझाव:'}</strong>{' '}
+                {lang === 'pa'
+                  ? "ਜੇਕਰ ਡਾਊਨਲੋਡ ਆਪਣੇ ਆਪ ਸ਼ੁਰੂ ਨਾ ਹੋਵੇ, ਤਾਂ ਉੱਪਰ ਦਿੱਤੇ ਚਿੱਤਰ ਉੱਤੇ 2 ਸਕਿੰਟ ਉਂਗਲ ਦਬਾ ਕੇ ਰੱਖੋ (Touch & Hold) ਅਤੇ 'Save Image / ਇਮੇਜ ਸੇਵ ਕਰੋ' ਚੁਣੋ।"
+                  : lang === 'en'
+                  ? 'If the download does not start automatically, press & hold the image for 2 seconds (Touch & Hold) and select "Save Image".'
+                  : "यदि डाउनलोड स्वतः प्रारंभ न हो, तो ऊपर दिए चित्र पर २ सेकंड उंगली दबाकर रखें (Touch & Hold) और 'Save Image / इमेज डाउनलोड करें' चुनें।"}
+              </span>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 🔐 Admin Login Gatekeeper Modal (Pothi Mode #F4ECD8 parchment leaf theme) */}
@@ -2582,6 +3341,90 @@ export default function App() {
         isOpen={showQuoteCardModal} 
         onClose={() => setShowQuoteCardModal(false)} 
         data={quoteCardData} 
+      />
+
+      {selectedVault && (
+        <SacredReaderModal
+          isOpen={showSacredReaderModal}
+          onClose={() => setShowSacredReaderModal(false)}
+          title={selectedVault.hindiTitle}
+          subtitle={selectedVault.subtitle}
+          chapters={selectedVault.chapters || []}
+          currentChapterIdx={selectedSectionIdx !== null ? selectedSectionIdx : 0}
+          onChapterChange={(idx) => setSelectedSectionIdx(idx)}
+          lang={lang}
+        />
+      )}
+
+      <SadhanaAlarmModal
+        isOpen={showAlarmModal}
+        onClose={() => setShowAlarmModal(false)}
+        lang={lang}
+        showToast={showToast}
+      />
+
+      <DailyResolutionModal
+        isOpen={showResolutionModal}
+        onClose={() => setShowResolutionModal(false)}
+        lang={lang}
+        showToast={showToast}
+      />
+
+      <SadhanaReportCardModal
+        isOpen={showReportCardModal}
+        onClose={() => setShowReportCardModal(false)}
+        devoteeName={devoteeName}
+        malaRounds={malaRounds}
+        totalReadingSeconds={(todaySadhanaMinutes * 60) + readingSeconds}
+        vaultReadChapters={vaultReadChapters}
+        lang={lang}
+        showToast={showToast}
+      />
+
+      <YugaErasModal
+        isOpen={showYugaModal}
+        onClose={() => setShowYugaModal(false)}
+        lang={lang}
+      />
+
+      <PilgrimageMapModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        lang={lang}
+      />
+
+      <KabirGlossaryModal
+        isOpen={showGlossaryModal}
+        onClose={() => setShowGlossaryModal(false)}
+        lang={lang}
+      />
+
+      <WisdomChatModal
+        isOpen={showWisdomChatModal}
+        onClose={() => {
+          setShowWisdomChatModal(false);
+          setWisdomChatContext(undefined);
+        }}
+        lang={lang}
+        initialContext={wisdomChatContext}
+      />
+
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        currentUser={currentUser}
+        lang={lang}
+        sadhanaMinutes={todaySadhanaMinutes}
+        sadhanaStreak={sadhanaStreak}
+        dailyGoal={dailyGoalMinutes}
+        onSyncCloud={handleForceCloudSync}
+        isSyncing={isCloudSyncing}
+      />
+
+      <LiveMeditationOverlay 
+        isOpen={isLiveMeditation}
+        onClose={() => setIsLiveMeditation(false)}
+        lang={lang}
       />
     </div>
   );

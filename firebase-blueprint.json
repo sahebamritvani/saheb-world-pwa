@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "UserSadhanaProfile": {
+      "title": "UserSadhanaProfile",
+      "description": "Devotee profile tracking multi-user sadhana minutes, streak, and badges",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "totalMinutes": { "type": "number" },
+        "sadhanaStreak": { "type": "number" },
+        "lastActiveAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["userId", "displayName"]
+    },
+    "LiveSumiranPresence": {
+      "title": "LiveSumiranPresence",
+      "description": "Active real-time souls meditating together in Live Global Sumiran",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "joinedAt": { "type": "string", "maxLength": 64 },
+        "isMeditating": { "type": "boolean" }
+      },
+      "required": ["userId", "isMeditating"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserSadhanaProfile" },
+      "description": "Private user sadhana profile document"
+    },
+    "/live_sumiran/{presenceId}": {
+      "schema": { "$ref": "#/entities/LiveSumiranPresence" },
+      "description": "Live global sumiran active participants"
+    }
+  }
+}
